@@ -32,14 +32,16 @@ export function removeTextTransformer(operation: RemoveTextOperation, appliedOpe
             } else {
                 return [{...operation, text: operation.text.substring(0, appliedOperation.offset - operation.offset)}]
             }
-        }
-    } else if (appliedOperation.type === "insert_node") {
-        let newPath = pathTransform(operation.path, appliedOperation)!;
-        if (newPath !== operation.path) {
-            return [{...operation, path: newPath}];
         } else {
-            return [operation]
+            return [operation];
         }
     }
-    return [operation];
+
+    let newPath = pathTransform(operation.path, appliedOperation);
+    if (newPath === null) return [];
+    if (operation.path !== newPath) {
+        return [{...operation, path: newPath}];
+    } else {
+        return [operation];
+    }
 }

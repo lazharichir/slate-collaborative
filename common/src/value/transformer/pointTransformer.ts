@@ -3,7 +3,7 @@ import {Operation} from "../action/Operation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function pointTransformer(point: Point, appliedOperation: Operation): Point {
+export function pointTransformer(point: Point, appliedOperation: Operation): Point | null {
     if (appliedOperation.type === "insert_text") {
         if (!Path.equals(appliedOperation.path, point.path)) return point;
         if (appliedOperation.offset <= point.offset) {
@@ -21,19 +21,13 @@ export function pointTransformer(point: Point, appliedOperation: Operation): Poi
         } else {
             return point;
         }
-    } else if (appliedOperation.type === "insert_node") {
-        let newPath = pathTransform(point.path, appliedOperation)!;
+    } else {
+        let newPath = pathTransform(point.path, appliedOperation);
+        if (newPath === null) return null;
         if (newPath !== point.path) {
-            return ({...point, path: newPath});
+            return {...point, path: newPath};
         } else {
             return point;
         }
-    }
-
-    let newPath = pathTransform(point.path, appliedOperation)!;
-    if (newPath !== point.path) {
-        return {...point, path: newPath};
-    } else {
-        return point;
     }
 }

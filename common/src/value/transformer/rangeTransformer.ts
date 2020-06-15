@@ -6,7 +6,7 @@ import {pointTransformer} from "./pointTransformer";
 
 
 
-export function rangeTransformer(range: Range, appliedOperation: Operation): Range {
+export function rangeTransformer(range: Range, appliedOperation: Operation): Range | null {
     if (appliedOperation.type === "insert_text") {
         let {anchor, focus} = range;
         if (Path.equals(anchor.path, appliedOperation.path)) {
@@ -28,7 +28,9 @@ export function rangeTransformer(range: Range, appliedOperation: Operation): Ran
     } else {
         let anchor = pointTransformer(range.anchor, appliedOperation);
         let focus = pointTransformer(range.focus, appliedOperation);
-        if (anchor !== range.anchor || focus !== range.focus) {
+        if (anchor === null || focus === null) {
+            return null;
+        } else if (anchor !== range.anchor || focus !== range.focus) {
             return ({...range, anchor, focus});
         } else {
             return range;

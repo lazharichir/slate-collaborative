@@ -64,4 +64,30 @@ describe("Node Reducer", () => {
             });
         });
     });
+    describe("remove_node", () => {
+        it("removes node at beginning", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+                }, {type: "remove_node", path: [0], node: {text: "abc"}}
+            )).toEqual({
+                children: [{text: "def"}, {text: "ghi"}]
+            });
+        })
+        it("removes node in middle", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+                }, {type: "remove_node", path: [1], node: {text: "def"}}
+            )).toEqual({
+                children: [{text: "abc"}, {text: "ghi"}]
+            });
+        })
+        it("removes node at end", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+                }, {type: "remove_node", path: [2], node: {text: "ghi"}}
+            )).toEqual({
+                children: [{text: "abc"}, {text: "def"}]
+            });
+        })
+    });
 });

@@ -175,4 +175,70 @@ describe("Remote Selection Reducer", () => {
             });
         })
     });
+    describe("remove_node", () => {
+        let parentPrevious = [0], parent = [1], previous = [1, 0], at = [1, 1], child = [1, 1, 1], next = [1, 2], parentNext = [2];
+        ([
+            ["parentPrevious-parentPrevious", [parentPrevious, parentPrevious], [parentPrevious, parentPrevious]],
+            ["parentPrevious-parent", [parentPrevious, parent], [parentPrevious, parent]],
+            ["parentPrevious-previous", [parentPrevious, previous], [parentPrevious, previous]],
+            ["parentPrevious-at", [parentPrevious, at], null],
+            ["parentPrevious-child", [parentPrevious, child], null],
+            ["parentPrevious-next", [parentPrevious, next], [parentPrevious, at]],
+            ["parentPrevious-parentNext", [parentPrevious, parentNext], [parentPrevious, parentNext]],
+
+            ["parent-parentPrevious", [parent, parentPrevious], [parent, parentPrevious]],
+            ["parent-parent", [parent, parent], [parent, parent]],
+            ["parent-previous", [parent, previous], [parent, previous]],
+            ["parent-at", [parent, at], null],
+            ["parent-child", [parent, child], null],
+            ["parent-next", [parent, next], [parent, at]],
+            ["parent-parentNext", [parent, parentNext], [parent, parentNext]],
+
+            ["previous-parentPrevious", [previous, parentPrevious], [previous, parentPrevious]],
+            ["previous-parent", [previous, parent], [previous, parent]],
+            ["previous-previous", [previous, previous], [previous, previous]],
+            ["previous-at", [previous, at], null],
+            ["previous-child", [previous, child], null],
+            ["previous-next", [previous, next], [previous, at]],
+            ["previous-parentNext", [previous, parentNext], [previous, parentNext]],
+
+            ["at-parentPrevious", [at, parentPrevious], null],
+            ["at-parent", [at, parent], null],
+            ["at-previous", [at, previous], null],
+            ["at-at", [at, at], null],
+            ["at-child", [at, child], null],
+            ["at-next", [at, next], null],
+            ["at-parentNext", [at, parentNext], null],
+
+            ["child-parentPrevious", [child, parentPrevious], null],
+            ["child-parent", [child, parent], null],
+            ["child-previous", [child, previous], null],
+            ["child-at", [child, at], null],
+            ["child-child", [child, child], null],
+            ["child-next", [child, next], null],
+            ["child-parentNext", [child, parentNext], null],
+
+            ["next-parentPrevious", [next, parentPrevious], [at, parentPrevious]],
+            ["next-parent", [next, parent], [at, parent]],
+            ["next-previous", [next, previous], [at, previous]],
+            ["next-at", [next, at], null],
+            ["next-child", [next, child], null],
+            ["next-next", [next, next], [at, at]],
+            ["next-parentNext", [next, parentNext], [at, parentNext]],
+
+            ["parentNext-parentPrevious", [parentNext, parentPrevious], [parentNext, parentPrevious]],
+            ["parentNext-parent", [parentNext, parent], [parentNext, parent]],
+            ["parentNext-previous", [parentNext, previous], [parentNext, previous]],
+            ["parentNext-at", [parentNext, at], null],
+            ["parentNext-child", [parentNext, child], null],
+            ["parentNext-next", [parentNext, next], [parentNext, at]],
+            ["parentNext-parentNext", [parentNext, parentNext], [parentNext, parentNext]]
+        ] as [string, [Path, Path], [Path, Path] | null][]).forEach(([name, input, output]) => {
+            it(name, () => {
+                expect(localSelectionReducer(input !== null ? {anchor: {path: input[0], offset: 5}, focus: {path: input[1], offset: 5}} : null,
+                    {type: "remove_node", path: [1, 1], node: {text: "abc"}}
+                )).toEqual(output !== null ? {anchor: {path: output[0], offset: 5}, focus: {path: output[1], offset: 5}} : null);
+            });
+        });
+    })
 });
