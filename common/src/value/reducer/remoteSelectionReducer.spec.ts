@@ -240,5 +240,8 @@ describe("Remote Selection Reducer", () => {
                 )).toEqual(output !== null ? {anchor: {path: output[0], offset: 5}, focus: {path: output[1], offset: 5}} : null);
             });
         });
-    })
+    });
+    describe("set_node", () => {
+        it("no-op", () => {});
+    });
 });

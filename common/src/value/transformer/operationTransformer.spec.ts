@@ -29,6 +29,9 @@ describe("Operation Transformer", () => {
         describe("remove_node", () => {
             it("no-op", () => {});
         });
+        describe("set_node", () => {
+            it("no-op", () => {});
+        });
     })
     describe("insert_text applied", () => {
         describe("set_selection", () => {
@@ -114,7 +117,10 @@ describe("Operation Transformer", () => {
                     {type: "remove_node", path: [0], node: {text: "abdefc"}}
                 ]);
             });
-        })
+        });
+        describe("set_node", () => {
+            it("no-op", () => {});
+        });
     });
     describe("remove_text applied", () => {
         describe("set_selection", () => {
@@ -243,7 +249,10 @@ describe("Operation Transformer", () => {
                     {type: "remove_node", path: [0], node: {text: "ab"}}
                 ]);
             });
-        })
+        });
+        describe("set_node", () => {
+            it("no-op", () => {});
+        });
     });
     describe("insert_node applied", () => {
         describe("set_selection", () => {
@@ -273,18 +282,19 @@ describe("Operation Transformer", () => {
         });
         describe("insert_text", () => {
             ([
-                ["parent's previous", [0], [2, 1]],
-                ["parent's previous's child", [0, 0], [1, 1]],
-                ["parent", [1], [2, 1]],
-                ["previous", [1, 0], [1, 2]],
+                ["parent's previous", [0], [0]],
+                ["parent's previous's child", [0, 0], [0, 0]],
+                ["parent", [1], [1]],
+                ["previous", [1, 0], [1, 0]],
                 ["at", [1, 1], [1, 2]],
-                ["next", [1, 2], [1, 1]],
-                ["parent's next", [2], [1, 1]],
+                ["child", [1, 1, 1], [1, 2, 1]],
+                ["next", [1, 2], [1, 3]],
+                ["parent's next", [2], [2]],
             ] as [string, Path, Path][]).forEach(([name, initial, expected]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "insert_text", path: [1, 1], offset: 5, text: "abc"},
-                        {type: "insert_node", path: initial, node: {text: ""}}
+                        {type: "insert_text", path: initial, offset: 5, text: "abc"},
+                        {type: "insert_node", path: [1, 1], node: {text: ""}}
                     )).toEqual([
                         {type: "insert_text", path: expected, offset: 5, text: "abc"}
                     ]);
@@ -360,6 +370,27 @@ describe("Operation Transformer", () => {
                 ]);
             })
         })
+        describe("set_node", () => {
+            ([
+                ["parent's previous", [0], [0]],
+                ["parent's previous's child", [0, 0], [0, 0]],
+                ["parent", [1], [1]],
+                ["previous", [1, 0], [1, 0]],
+                ["at", [1, 1], [1, 2]],
+                ["child", [1, 1, 1], [1, 2, 1]],
+                ["next", [1, 2], [1, 3]],
+                ["parent's next", [2], [2]],
+            ] as [string, Path, Path][]).forEach(([name, initial, expected]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_node", path: initial, properties: {}, newProperties: {}},
+                        {type: "insert_node", path: [1, 1], node: {text: ""}}
+                    )).toEqual([
+                        {type: "set_node", path: expected, properties: {}, newProperties: {}}
+                    ]);
+                });
+            });
+        });
     });
     describe("remove_node applied", () => {
         describe("set_selection", () => {
@@ -452,11 +483,9 @@ describe("Operation Transformer", () => {
                     }] : []);
                 });
             })
-        })
-
+        });
         describe("insert_text", () => {
             let parentPrevious = [0], previous = [1, 0], at = [1, 1], child = [1, 1, 1], next = [1, 2], parentNext = [2];
-
             ([
                 ["parentPrevious", parentPrevious, parentPrevious],
                 ["previous", previous, previous],
@@ -547,6 +576,62 @@ describe("Operation Transformer", () => {
                 }, {
                     type: "remove_node", path: [1, 1], node: {text: "abc"}
                 })).toEqual([{type: "remove_node", path: [1], node: {children: [{text: "def"}]}}])
+            });
+        });
+        describe("set_node", () => {
+            let parentPrevious = [0], previous = [1, 0], at = [1, 1], child = [1, 1, 1], next = [1, 2], parentNext = [2];
+            ([
+                ["parentPrevious", parentPrevious, parentPrevious],
+                ["previous", previous, previous],
+                ["at", at, null],
+                ["child", child, null],
+                ["next", next, at],
+                ["parentNext", parentNext, parentNext],
+            ] as [string, Path, Path][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer({
+                        type: "set_node", path: input, properties: {}, newProperties: {}
+                    }, {
+                        type: "remove_node", path: [1, 1], node: {text: "abc"}
+                    })).toEqual(
+                        output !== null ? [{type: "set_node", path: output, properties: {}, newProperties: {}}] : []
+                    )
+                })
+            })
+
+        });
+    });
+    describe("applied set_node", () => {
+        describe("set_selection", () => {
+            it("no-op", () => {});
+        })
+        describe("insert_text", () => {
+            it("no-op", () => {});
+        })
+        describe("remove_text", () => {
+            it("no-op", () => {});
+        });
+        describe("insert_node", () => {
+            it("no-op", () => {});
+        })
+        describe("remove_node", () => {
+            it("parent", () => {
+                expect(operationTransformer({
+                    type: "remove_node", path: [1], node: {children: [{text: "def"}, {text: "abc"}]}
+                }, {
+                    type: "set_node", path: [1, 1], properties: {bold: undefined}, newProperties: {bold: true}
+                })).toEqual([{type: "remove_node", path: [1], node: {children: [{text: "def"}, {text: "abc", bold: true}]}}])
+            });
+        })
+        describe("set_node", () => {
+            it("reconciles", () => {
+                expect(operationTransformer({
+                    type: "set_node", path: [1, 1], properties: {bold: undefined}, newProperties: {bold: false}
+                }, {
+                    type: "set_node", path: [1, 1], properties: {bold: undefined}, newProperties: {bold: true}
+                })).toEqual([{
+                    type: "set_node", path: [1, 1], properties: {bold: true}, newProperties: {bold: false}
+                }])
             });
         });
     });

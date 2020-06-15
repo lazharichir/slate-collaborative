@@ -4,6 +4,7 @@ import {insertTextTransformer} from "./insertTextTransformer";
 import {removeTextTransformer} from "./removeTextTransformer";
 import {insertNodeTransformer} from "./insertNodeTransformer";
 import {removeNodeTransformer} from "./removeNodeTransformer";
+import {setNodeTransformer} from "./setNodeTransformer";
 
 export function operationTransformer(operation: Operation, appliedOperation: Operation): Operation[] {
     switch (operation.type) {
@@ -12,6 +13,7 @@ export function operationTransformer(operation: Operation, appliedOperation: Ope
         case "remove_text": return removeTextTransformer(operation, appliedOperation);
         case "insert_node": return insertNodeTransformer(operation, appliedOperation);
         case "remove_node": return removeNodeTransformer(operation, appliedOperation);
+        case "set_node": return setNodeTransformer(operation, appliedOperation);
         default: return [operation];
     }
 }

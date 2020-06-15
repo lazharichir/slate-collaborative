@@ -1,8 +1,6 @@
 import {localSelectionReducer} from "./localSelectionReducer";
 import {remoteSelectionReducer} from "./remoteSelectionReducer";
 import {Path} from "../Path";
-import {operationTransformer} from "../transformer/operationTransformer";
-import {SetSelectionOperation} from "../action/Operation";
 
 describe("Local Selection Reducer", () => {
     describe("set_selection", () => {
@@ -242,5 +240,8 @@ describe("Local Selection Reducer", () => {
                 )).toEqual(output !== null ? {anchor: {path: output[0], offset: 5}, focus: {path: output[1], offset: 5}} : null);
             });
         });
-    })
+    });
+    describe("set_node", () => {
+        it("no-op", () => {});
+    });
 });
