@@ -1,0 +1,8 @@
+# IDE files
+/.idea
+
+# Environment files
+/samconfig.toml
+
+# IDEA
+*.iml

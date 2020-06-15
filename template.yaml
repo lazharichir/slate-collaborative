@@ -1,0 +1,187 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+    # Backend
+    RecordChangesetTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+            -   AttributeName: id
+                AttributeType: S
+            -   AttributeName: version
+                AttributeType: N
+            KeySchema:
+            -   AttributeName: id
+                KeyType: HASH
+            -   AttributeName: version
+                KeyType: RANGE
+    RecordTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+            -   AttributeName: id
+                AttributeType: S
+            KeySchema:
+            -   AttributeName: id
+                KeyType: HASH
+    RecordConnectionTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+            -   AttributeName: id
+                AttributeType: S
+            -   AttributeName: connectionId
+                AttributeType: S
+            KeySchema:
+            -   AttributeName: id
+                KeyType: HASH
+            -   AttributeName: connectionId
+                KeyType: RANGE
+            GlobalSecondaryIndexes:
+            -   IndexName: connectionId-IDX
+                KeySchema:
+                -   AttributeName: connectionId
+                    KeyType: HASH
+                Projection:
+                    ProjectionType: KEYS_ONLY
+    BackendRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                - Action:
+                  - sts:AssumeRole
+                  Effect: ALLOW
+                  Principal:
+                    Service:
+                    - lambda.amazonaws.com
+    BackendPermission:
+        Type: AWS::IAM::Policy
+        Properties:
+            PolicyName: backend-policy
+            Roles:
+            -   !Ref BackendRole
+            PolicyDocument:
+                Statement:
+                -   Action:
+                    -   sts:AssumeRole
+                    -   logs:CreateLogGroup
+                    -   logs:CreateLogStream
+                    -   logs:PutLogEvents
+                    Effect: Allow
+                    Resource: '*'
+                -   Action:
+                    -   dynamodb:Query
+                    -   dynamodb:GetItem
+                    -   dynamodb:PutItem
+                    -   dynamodb:UpdateItem
+                    -   dynamodb:DeleteItem
+                    Effect: Allow
+                    Resource:
+                    -   !GetAtt RecordChangesetTable.Arn
+                    -   !GetAtt RecordTable.Arn
+                    -   !GetAtt RecordConnectionTable.Arn
+                    -   !Join
+                        -   ''
+                        -   -   !GetAtt RecordConnectionTable.Arn
+                            -   '/index/connectionId-IDX'
+                -   Action:
+                    -   execute-api:ManageConnections
+                    -   execute-api:Invoke
+                    Effect: Allow
+                    Resource:
+                    -   !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendApi}/*'
+    BackendHandlerFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+            Runtime: nodejs12.x
+            Code: backend/build
+            Handler: index.handler
+            Role: !GetAtt BackendRole.Arn
+            Timeout: 120
+            Environment:
+                Variables:
+                    RECORD_CHANGESET_TABLE_NAME: !Ref RecordChangesetTable
+                    RECORD_TABLE_NAME: !Ref RecordTable
+                    RECORD_CONNECTION_TABLE_NAME: !Ref RecordConnectionTable
+    BackendApi:
+        Type: AWS::ApiGatewayV2::Api
+        Properties:
+            Name: Lambda Proxy
+            ProtocolType: WEBSOCKET
+            RouteSelectionExpression: "$request.body.action"
+    BackendConnectRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref BackendApi
+            RouteKey: "$connect"
+            Target: !Join
+                -   /
+                -   - integrations
+                    - !Ref BackendIntegration
+    BackendDisconnectRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref BackendApi
+            RouteKey: "$disconnect"
+            Target: !Join
+                - /
+                -   - integrations
+                    - !Ref BackendIntegration
+    BackendDefaultRoute:
+        Type: AWS::ApiGatewayV2::Route
+        Properties:
+            ApiId: !Ref BackendApi
+            RouteKey: "$default"
+            Target: !Join
+                -   /
+                -   - integrations
+                    - !Ref BackendIntegration
+    BackendIntegration:
+        Type: AWS::ApiGatewayV2::Integration
+        Properties:
+            ApiId: !Ref BackendApi
+            IntegrationType: AWS_PROXY
+            IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BackendHandlerFunction.Arn}/invocations
+    BackendDeployment:
+        Type: AWS::ApiGatewayV2::Deployment
+        DependsOn:
+        -   BackendConnectRoute
+        -   BackendDefaultRoute
+        -   BackendDisconnectRoute
+        Properties:
+            ApiId: !Ref BackendApi
+    BackendStage:
+        Type: AWS::ApiGatewayV2::Stage
+        Properties:
+            StageName: v1
+            ApiId: !Ref BackendApi
+            DeploymentId: !Ref BackendDeployment
+    BackendHandlerFunctionPermission:
+        Type: AWS::Lambda::Permission
+        DependsOn:
+        -   BackendApi
+        Properties:
+          Action: lambda:InvokeFunction
+          FunctionName: !Ref BackendHandlerFunction
+          Principal: apigateway.amazonaws.com
+
+    # Frontend
+    Frontend:
+        Type: AWS::S3::Bucket
+        Properties:
+            AccessControl: PublicRead
+            MetricsConfigurations:
+            -   Id: EntireBucket
+            WebsiteConfiguration:
+                IndexDocument: index.html
+                ErrorDocument: error.html
+
+Outputs:
+    WebSocketURL:
+        Value: !Sub 'wss://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/${BackendStage}'

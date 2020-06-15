@@ -1,0 +1,9 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "main": "handler.js",
+  "dependencies": {
+    "common": "file:../../common/build"
+  },
+  "bundleDependencies": ["common"]
+}
