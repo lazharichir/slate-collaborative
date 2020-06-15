@@ -12,7 +12,7 @@ export function pathTransform(path: Path, operation: Operation, options: { affin
     if (operation.type === "insert_node") {
         if (Path.equals(operation.path, path) || Path.endsBefore(operation.path, path) || Path.isAncestor(operation.path, path)) {
             let newPath = [...path];
-            newPath[operation.path.length - 1] += 1
+            newPath[operation.path.length - 1] += 1;
             return newPath;
         } else {
             return path;

@@ -2,6 +2,7 @@ import {Selection} from "../Selection";
 import {Operation} from "../action/Operation";
 import {Path} from "../Path";
 import {Point} from "../Point";
+import {rangeTransformer} from "../transformer/rangeTransformer";
 
 export function remoteSelectionReducer(state: Selection, action: Operation): Selection {
     if (action.type === "set_selection") return state;
@@ -45,6 +46,18 @@ export function remoteSelectionReducer(state: Selection, action: Operation): Sel
         }
 
         return (anchor !== state.anchor || focus !== state.focus) ? ({anchor, focus}) : state;
+    } else if (action.type === "insert_node") {
+        return rangeTransformer(state, action);
+    } else if (action.type === "remove_node") {
+        return rangeTransformer(state, action);
+    } else if (action.type === "merge_node") {
+        return rangeTransformer(state, action);
+    } else if (action.type === "split_node") {
+        return rangeTransformer(state, action);
+    } else if (action.type === "set_node") {
+        return rangeTransformer(state, action);
+    } else if (action.type === "move_node") {
+        return rangeTransformer(state, action);
     }
 
     return state;

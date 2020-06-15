@@ -38,4 +38,30 @@ describe("Node Reducer", () => {
                 .toEqual({children: [{text: "abc"}, {text: "f"}]});
         });
     })
+    describe("insert_node", () => {
+        it("beginning", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}]
+                }, {type: "insert_node", path: [0], node: {text: "ghi"}}
+            )).toEqual({
+                children: [{text: "ghi"}, {text: "abc"}, {text: "def"}]
+            });
+        });
+        it("in-between", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}]
+                }, {type: "insert_node", path: [1], node: {text: "ghi"}}
+            )).toEqual({
+                children: [{text: "abc"}, {text: "ghi"}, {text: "def"}]
+            });
+        });
+        it("at the end", () => {
+            expect(nodeReducer({
+                    children: [{text: "abc"}, {text: "def"}]
+                }, {type: "insert_node", path: [2], node: {text: "ghi"}}
+            )).toEqual({
+                children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+            });
+        });
+    });
 });

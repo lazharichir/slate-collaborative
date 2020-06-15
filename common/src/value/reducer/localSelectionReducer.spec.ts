@@ -1,5 +1,6 @@
 import {localSelectionReducer} from "./localSelectionReducer";
 import {remoteSelectionReducer} from "./remoteSelectionReducer";
+import {Path} from "../Path";
 
 describe("Local Selection Reducer", () => {
     describe("set_selection", () => {
@@ -150,5 +151,28 @@ describe("Local Selection Reducer", () => {
                 })
             });
         });
-    })
+    });
+    describe("insert_node", () => {
+        ([
+            ["parent's previous", [0], [2, 1]],
+            ["parent's previous's child", [0, 1], [1, 1]],
+            ["parent", [1], [2, 1]],
+            ["previous", [1, 0], [1, 2]],
+            ["at", [1, 1], [1, 2]],
+            ["next", [1, 2], [1, 1]],
+            ["parent's next", [2], [1, 1]]
+        ] as [string, Path, Path][]).forEach(([name, initial, expected]) => {
+            it(name, () => {
+                expect(localSelectionReducer({
+                    anchor: {path: [1, 1], offset: 5},
+                    focus: {path: [1, 1], offset: 5}
+                }, {
+                    type: "insert_node", path: initial, node: {text: "abc"}
+                })).toEqual({
+                    anchor: {path: expected, offset: 5},
+                    focus: {path: expected, offset: 5}
+                })
+            });
+        })
+    });
 });
