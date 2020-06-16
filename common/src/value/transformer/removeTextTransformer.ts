@@ -35,13 +35,13 @@ export function removeTextTransformer(operation: RemoveTextOperation, appliedOpe
         } else {
             return [operation];
         }
-    }
-
-    let newPath = pathTransform(operation.path, appliedOperation);
-    if (newPath === null) return [];
-    if (operation.path !== newPath) {
-        return [{...operation, path: newPath}];
     } else {
-        return [operation];
+        let newPath = pathTransform(operation.path, appliedOperation);
+        if (newPath === null) return [];
+        if (operation.path !== newPath) {
+            return [{...operation, path: newPath}];
+        } else {
+            return [operation];
+        }
     }
 }

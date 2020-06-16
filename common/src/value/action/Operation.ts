@@ -31,6 +31,7 @@ export type MoveNodeOperation = {
     type: 'move_node',
     path: Path,
     newPath: Path,
+    node?: Node
     [key: string]: unknown
 };
 

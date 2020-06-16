@@ -1,6 +1,8 @@
-import {Operation, SetSelectionOperation} from "../action/Operation";
+import {InsertNodeOperation, Operation, RemoveNodeOperation, SetSelectionOperation} from "../action/Operation";
 import {Node} from "../Node";
-import apply = Reflect.apply;
+import {Path} from "../Path";
+import {pathTransform} from "../transformer/pathTransformer";
+import {getNode} from "./getNode";
 
 export function nodeReducer(node: Node, action: Operation): Node {
     if (action.type === "set_selection") {
@@ -139,6 +141,11 @@ export function nodeReducer(node: Node, action: Operation): Node {
                 }
             }
         }
+    } else if (action.type === "move_node") {
+        let targetNode = getNode(node, action.path);
+        let removeNodeOperation: RemoveNodeOperation = {...action, type: "remove_node", path: action.path, node: targetNode};
+        let insertNodeOperation: InsertNodeOperation = {...action, type: "insert_node", path: pathTransform(action.newPath, removeNodeOperation)!, node: targetNode};
+        return nodeReducer(nodeReducer(node, removeNodeOperation), insertNodeOperation);
     }
 
     throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${node}`);

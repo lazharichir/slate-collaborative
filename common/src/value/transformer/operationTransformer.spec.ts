@@ -3,6 +3,7 @@ import {SetSelectionOperation} from "../action/Operation";
 import {Range} from "../Range";
 import {Path} from "../Path";
 import {Point} from "../Point";
+import {localSelectionReducer} from "../reducer/localSelectionReducer";
 
 
 function properties(anchor: Point | null, focus: Point | null): Range | Partial<Range> | null {
@@ -32,7 +33,10 @@ describe("Operation Transformer", () => {
         describe("set_node", () => {
             it("no-op", () => {});
         });
-    })
+        describe("move_node", () => {
+            it("no-op", () => {});
+        });
+    });
     describe("insert_text applied", () => {
         describe("set_selection", () => {
             let before = 0, at = 1, after = 2, unspecified = null, length = 3;
@@ -119,6 +123,9 @@ describe("Operation Transformer", () => {
             });
         });
         describe("set_node", () => {
+            it("no-op", () => {});
+        });
+        describe("move_node", () => {
             it("no-op", () => {});
         });
     });
@@ -251,6 +258,9 @@ describe("Operation Transformer", () => {
             });
         });
         describe("set_node", () => {
+            it("no-op", () => {});
+        });
+        describe("move_node", () => {
             it("no-op", () => {});
         });
     });
@@ -390,6 +400,60 @@ describe("Operation Transformer", () => {
                     ]);
                 });
             });
+        });
+        describe("move_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [1], previous = [1, 0], at = [1, 1], next = [1, 2], parentNext = [2];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [[0, 1], [0]]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [[0, 1], [1]]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [[0, 1], [1, 0]]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [[0, 1], [1, 2]]],
+                ["parentPreviousChild-next", [parentPreviousChild, next], [[0, 1], [1, 3]]],
+                ["parentPreviousChild-parentNext", [parentPreviousChild, parentNext], [[0, 1], [2]]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [[0], [1, 0]]],
+                ["parentPrevious-at", [parentPrevious, at], [[0], [1, 2]]],
+                ["parentPrevious-next", [parentPrevious, next], [[0], [1, 3]]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [[0], [2]]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [[1], [0, 1]]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [[1, 0], [0, 1]]],
+                ["previous-parentPrevious", [previous, parentPrevious], [[1, 0], [0]]],
+                ["previous-parent", [previous, parent], [[1, 0], [1]]],
+                ["previous-next", [previous, next], [[1, 0], [1, 3]]],
+                ["previous-parentNext", [previous, parentNext], [[1, 0], [2]]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [[1, 2], [0, 1]]],
+                ["at-parentPrevious", [at, parentPrevious], [[1, 2], [0]]],
+                ["at-parent", [at, parent], [[1, 2], [1]]],
+                ["at-next", [at, next], [[1, 2], [1, 3]]],
+                ["at-parentNext", [at, parentNext], [[1, 2], [2]]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [[1, 3], [0, 1]]],
+                ["next-parentPrevious", [next, parentPrevious], [[1, 3], [0]]],
+                ["next-parent", [next, parent], [[1, 3], [1]]],
+                ["next-previous", [next, previous], [[1, 3], [1, 0]]],
+                ["next-at", [next, at], [[1, 3], [1, 2]]],
+                ["next-parentNext", [next, parentNext], [[1, 3], [2]]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [[2], [0, 1]]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [[2], [0]]],
+                ["parentNext-parent", [parentNext, parent], [[2], [1]]],
+                ["parentNext-previous", [parentNext, previous], [[2], [1, 0]]],
+                ["parentNext-at", [parentNext, at], [[2], [1, 2]]],
+                ["parentNext-next", [parentNext, next], [[2], [1, 3]]],
+            ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [inputPath, inputNewPath], [outputPath, outputNewPath]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: inputPath, newPath: inputNewPath},
+                        {type: "insert_node", path: at, node: {text: "abc"}}
+                    )).toEqual([
+                        {type: "move_node", path: outputPath, newPath: outputNewPath},
+                    ]);
+                });
+            });
+
         });
     });
     describe("remove_node applied", () => {
@@ -598,8 +662,69 @@ describe("Operation Transformer", () => {
                     )
                 })
             })
-
         });
+        describe("move_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [1], previous = [1, 0], at = [1, 1], next = [1, 2], parentNext = [2];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [[0, 1], [0]]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [[0, 1], [1]]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [[0, 1], [1, 0]]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [[0, 1], [1, 1]]],
+                ["parentPreviousChild-next", [parentPreviousChild, next], [[0, 1], [1, 1]]],
+                ["parentPreviousChild-parentNext", [parentPreviousChild, parentNext], [[0, 1], [2]]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [[0], [1, 0]]],
+                ["parentPrevious-at", [parentPrevious, at], [[0], [1, 1]]],
+                ["parentPrevious-next", [parentPrevious, next], [[0], [1, 1]]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [[0], [2]]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [[1], [0, 1]]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [[1, 0], [0, 1]]],
+                ["previous-parentPrevious", [previous, parentPrevious], [[1, 0], [0]]],
+                ["previous-parent", [previous, parent], [[1, 0], [1]]],
+                ["previous-next", [previous, next], [[1, 0], [1, 1]]],
+                ["previous-parentNext", [previous, parentNext], [[1, 0], [2]]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [[1, 1], [0, 1]]],
+                ["next-parentPrevious", [next, parentPrevious], [[1, 1], [0]]],
+                ["next-parent", [next, parent], [[1, 1], [1]]],
+                ["next-previous", [next, previous], [[1, 1], [1, 0]]],
+                ["next-at", [next, at], [[1, 1], [1, 1]]],
+                ["next-parentNext", [next, parentNext], [[1, 1], [2]]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [[2], [0, 1]]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [[2], [0]]],
+                ["parentNext-parent", [parentNext, parent], [[2], [1]]],
+                ["parentNext-previous", [parentNext, previous], [[2], [1, 0]]],
+                ["parentNext-at", [parentNext, at], [[2], [1, 1]]],
+                ["parentNext-next", [parentNext, next], [[2], [1, 1]]],
+            ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [inputPath, inputNewPath], [outputPath, outputNewPath]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: inputPath, newPath: inputNewPath},
+                        {type: "remove_node", path: [1, 1], node: {text: "abc"}}
+                    )).toEqual([
+                        {type: "move_node", path: outputPath, newPath: outputNewPath},
+                    ]);
+                });
+            });
+
+            ([
+                ["at-parentPreviousChild", [at, parentPreviousChild]],
+                ["at-parentPrevious", [at, parentPrevious]],
+                ["at-parent", [at, parent]],
+                ["at-next", [at, next]],
+                ["at-parentNext", [at, parentNext]],
+            ] as [string, [Path, Path]][]).forEach(([name, [inputPath, inputNewPath]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: inputPath, newPath: inputNewPath},
+                        {type: "remove_node", path: [1, 1], node: {text: "abc"}}
+                    )).toEqual([]);
+                });
+            });
+        })
     });
     describe("applied set_node", () => {
         describe("set_selection", () => {
@@ -632,6 +757,468 @@ describe("Operation Transformer", () => {
                 })).toEqual([{
                     type: "set_node", path: [1, 1], properties: {bold: true}, newProperties: {bold: false}
                 }])
+            });
+        });
+        describe("move_node", () => {
+            it("no-op", () => {});
+        });
+    });
+    describe("move_node applied", () => {
+        describe("set_selection", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], start = [2, 2], within = [2, 4], withinChild = [2, 3, 2], end = [2, 5], next = [2, 6], parentNext = [4], unspecified = null;
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [[3, 2], [3, 5]]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [[3, 2], [3, 5]]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [[2, 3], [2, 6]]],
+                ["parentPreviousChild-start", [parentPreviousChild, start], [[2, 3], [2, 6]]],
+                ["parentPreviousChild-within", [parentPreviousChild, within], [[2, 2], [2, 6]]],
+                ["parentPreviousChild-withinChild", [parentPreviousChild, withinChild], [start, end]],
+                ["parentPreviousChild-end", [parentPreviousChild, end], [[2, 2], [2, 6]]],
+                ["parentPreviousChild-next", [parentPreviousChild, next], [start, end]],
+                ["parentPreviousChild-parentNext", [parentPreviousChild, parentNext], [start, end]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [[1, 3], [1, 6]]],
+                ["parentPrevious-start", [parentPrevious, start], [[1, 3], [1, 6]]],
+                ["parentPrevious-within", [parentPrevious, within], [[1, 2], [1, 6]]],
+                ["parentPrevious-withinChild", [parentPrevious, withinChild], [[1, 2], [1, 5]]],
+                ["parentPrevious-end", [parentPrevious, end], [[1, 2], [1, 6]]],
+                ["parentPrevious-next", [parentPrevious, next], [[1, 2], [1, 5]]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [[1, 2], [1, 5]]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [[0, 1, 2], [0, 1, 5]]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [[2, 1], [2, 4]]],
+                ["previous-parentPrevious", [previous, parentPrevious], [[3, 1], [3, 4]]],
+                ["previous-parent", [previous, parent], [[3, 1], [3, 4]]],
+                ["previous-within", [previous, within], [[2, 1], [2, 5]]],
+                ["previous-withinChild", [previous, withinChild], [[2, 1], [2, 4]]],
+                ["previous-end", [previous, end], [[2, 1], [2, 5]]],
+                ["previous-next", [previous, next], [[2, 1], [2, 4]]],
+                ["previous-parentNext", [previous, parentNext], [[2, 1], [2, 4]]],
+
+                ["start-parentPreviousChild", [start, parentPreviousChild], [[0, 1], [2, 4]]],
+                ["start-parentPrevious", [start, parentPrevious], [[0], [3, 4]]],
+                ["start-parent", [start, parent], [[2], [3, 4]]],
+                ["start-withinChild", [start, withinChild], [[2, 2, 2], [2, 4]]],
+                ["start-end", [start, end], [[2, 4], [2, 5]]],
+                ["start-next", [start, next], [[2, 5], [2, 4]]],
+                ["start-parentNext", [start, parentNext], [[4], [2, 4]]],
+
+                ["within-parentPreviousChild", [within, parentPreviousChild], [[2, 2], [2, 4]]],
+                ["within-parentPrevious", [within, parentPrevious], [[3, 2], [3, 4]]],
+                ["within-parent", [within, parent], [[3, 2], [3, 4]]],
+                ["within-previous", [within, previous], [[2, 3], [2, 5]]],
+                ["within-start", [within, start], [[2, 3], [2, 5]]],
+                ["within-next", [within, next], [[2, 2], [2, 4]]],
+                ["within-parentNext", [within, parentNext], [[2, 2], [2, 4]]],
+
+                ["withinChild-parentPreviousChild", [withinChild, parentPreviousChild], [[2, 2], [2, 5]]],
+                ["withinChild-parentPrevious", [withinChild, parentPrevious], [[3, 2], [3, 5]]],
+                ["withinChild-parent", [withinChild, parent], [[3, 2], [3, 5]]],
+                ["withinChild-previous", [withinChild, previous], [[2, 3], [2, 6]]],
+                ["withinChild-start", [withinChild, start], [[2, 3], [2, 6]]],
+                ["withinChild-within", [withinChild, within], [[2, 2], [2, 6]]],
+                ["withinChild-end", [withinChild, end], [[2, 2], [2, 6]]],
+                ["withinChild-next", [withinChild, next], [[2, 2], [2, 5]]],
+                ["withinChild-parentNext", [withinChild, parentNext], [[2, 2], [2, 5]]],
+
+                ["end-parentPreviousChild", [end, parentPreviousChild], [[2, 2], [0, 1]]],
+                ["end-parentPrevious", [end, parentPrevious], [[3, 2], [0]]],
+                ["end-parent", [end, parent], [[3, 2], [2]]],
+                ["end-previous", [end, previous], [[2, 3], [2, 1]]],
+                ["end-start", [end, start], [[2, 3], [2, 2]]],
+                ["end-withinChild", [end, withinChild], [[2, 2], [2, 3, 2]]],
+                ["end-parentNext", [end, parentNext], [[2, 2], [4]]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [[2, 2], [2, 5]]],
+                ["next-parentPrevious", [next, parentPrevious], [[3, 2], [3, 5]]],
+                ["next-parent", [next, parent], [[3, 2], [3, 5]]],
+                ["next-previous", [next, previous], [[2, 3], [2, 6]]],
+                ["next-start", [next, start], [[2, 3], [2, 6]]],
+                ["next-within", [next, within], [[2, 2], [2, 6]]],
+                ["next-withinChild", [next, withinChild], [[2, 2], [2, 5]]],
+                ["next-parentNext", [next, parentNext], [[2, 2], [2, 5]]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [[2, 2], [2, 5]]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [[3, 2], [3, 5]]],
+                ["parentNext-parent", [parentNext, parent], [[3, 2], [3, 5]]],
+                ["parentNext-previous", [parentNext, previous], [[2, 3], [2, 6]]],
+                ["parentNext-start", [parentNext, start], [[2, 3], [2, 6]]],
+                ["parentNext-within", [parentNext, within], [[2, 2], [2, 6]]],
+                ["parentNext-withinChild", [parentNext, withinChild], [[2, 2], [2, 5]]],
+                ["parentNext-end", [parentNext, end], [[2, 2], [2, 6]]],
+                ["parentNext-next", [parentNext, next], [[2, 2], [2, 5]]],
+            ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [path, newPath], [newStart, newEnd]]) => {
+                it(name, () => {
+                    expect(operationTransformer({
+                            type: "set_selection",
+                            properties: properties({path: start, offset: 5}, {path: end, offset: 5}),
+                            newProperties: properties({path: start, offset: 5}, {path: end, offset: 5}),
+                        } as SetSelectionOperation,
+                        {type: "move_node", path, newPath}
+                    )).toEqual([{
+                        type: "set_selection",
+                        properties: properties({path: newStart, offset: 5}, {path: newEnd, offset: 5}),
+                        newProperties: properties({path: newStart, offset: 5}, {path: newEnd, offset: 5})
+                    }]);
+                });
+                it(`${name}, unspecified anchor`, () => {
+                    expect(operationTransformer({
+                            type: "set_selection",
+                            properties: properties(null, {path: end, offset: 5}),
+                            newProperties: properties(null, {path: end, offset: 5})
+                        } as SetSelectionOperation,
+                        {type: "move_node", path, newPath}
+                    )).toEqual([{
+                        type: "set_selection",
+                        properties: properties(null, {path: newEnd, offset: 5}),
+                        newProperties: properties(null, {path: newEnd, offset: 5})
+                    }]);
+                });
+
+                it(`${name}, unspecified focus`, () => {
+                    expect(operationTransformer({
+                            type: "set_selection",
+                            properties: properties({path: start, offset: 5}, null),
+                            newProperties: properties({path: start, offset: 5}, null)
+                        } as SetSelectionOperation,
+                        {type: "move_node", path, newPath}
+                    )).toEqual([{
+                        type: "set_selection",
+                        properties: properties({path: newStart, offset: 5}, null),
+                        newProperties: properties({path: newStart, offset: 5}, null)
+                    }]);
+                });
+            });
+        });
+        describe("insert_text", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "insert_text", path: at, offset: 5, text: "abc"},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([{
+                        type: "insert_text", path: output, offset: 5, text: "abc"
+                    }]);
+                });
+            });
+        });
+        describe("remove_text", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "remove_text", path: at, offset: 5, text: "abc"},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([{
+                        type: "remove_text", path: output, offset: 5, text: "abc"
+                    }]);
+                });
+            });
+        });
+        describe("insert_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "insert_node", path: at, node: {text: "abc"}},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([{
+                        type: "insert_node", path: output, node: {text: "abc"}
+                    }]);
+                });
+            });
+        });
+        describe("remove_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], child1 = [2, 2, 0], child2 = [2, 2, 1], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "remove_node", path: at, node: {text: "abc"}},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([{
+                        type: "remove_node", path: output, node: {text: "abc"}
+                    }]);
+                });
+            });
+            it("parentPrevious-child1", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [1, 1], node: {children: [{text: "abc"}, {text: "def"}]}},
+                    {type: "move_node", path: [0], newPath: [1, 1, 0], node: {text: "ghi"}}
+                )).toEqual([
+                    {type: "remove_node", path: [0, 1], node: {children: [{text: "ghi"}, {text: "abc"}, {text: "def"}]}}
+                ]);
+            })
+            it("child1-parentNext", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [1, 1], node: {children: [{text: "abc"}, {text: "def"}]}},
+                    {type: "move_node", path: [1, 1, 0], newPath: [2]}
+                )).toEqual([
+                    {type: "remove_node", path: [1, 1], node: {children: [{text: "def"}]}}
+                ]);
+            })
+            it("child2-child1", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [1, 1], node: {children: [{text: "abc"}, {text: "def"}]}},
+                    {type: "move_node", path: [1, 1, 1], newPath: [1, 1, 0]}
+                )).toEqual([
+                    {type: "remove_node", path: [1, 1], node: {children: [{text: "def"}, {text: "abc"}]}}
+                ]);
+            })
+        });
+        describe("set_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_node", path: at, properties: {bold: undefined}, newProperties: {bold: true}},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([{
+                        type: "set_node", path: output, properties: {bold: undefined}, newProperties: {bold: true}
+                    }]);
+                });
+            });
+        });
+        describe("move_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 5]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: at, newPath: at},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([
+                        {type: "move_node", path: output, newPath: output}
+                    ]);
+                });
             });
         });
     });

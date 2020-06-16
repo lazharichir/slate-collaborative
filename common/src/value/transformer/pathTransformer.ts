@@ -18,7 +18,7 @@ export function pathTransform(path: Path, operation: Operation, options: { affin
             return null;
         } else if (Path.endsBefore(operation.path, path)) {
             let newPath = [...path];
-            newPath[operation.path.length - 1] -= 1
+            newPath[operation.path.length - 1] -= 1;
             return newPath;
         } else {
             return path;
@@ -67,15 +67,13 @@ export function pathTransform(path: Path, operation: Operation, options: { affin
 
         if (Path.isAncestor(operation.path, path) || Path.equals(operation.path, path)) {
             let newPath = [...operation.newPath];
-            if (Path.endsBefore(operation.path, operation.newPath) && operation.path.length < operation.newPath.length) {
+            if (Path.endsBefore(operation.path, operation.newPath)) {
                 newPath[operation.path.length - 1] -= 1
             }
             return newPath.concat(path.slice(operation.path.length));
         } else if (Path.isSibling(operation.path, operation.newPath) && (Path.isAncestor(operation.newPath, path) || Path.equals(operation.newPath, path))) {
             if (Path.endsBefore(operation.path, path)) {
-                let newPath = [...path];
-                newPath[operation.path.length - 1] -= 1;
-                return newPath;
+                return path;
             } else {
                 let newPath = [...path];
                 newPath[operation.path.length - 1] += 1;

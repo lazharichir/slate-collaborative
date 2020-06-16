@@ -90,4 +90,24 @@ describe("Node Reducer", () => {
             });
         })
     });
+    describe("move_node", () => {
+        it("first to second", () => {
+            expect(nodeReducer({
+                children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+            }, {
+                type: "move_node", path: [0], newPath: [2]
+            })).toEqual({
+                children: [{text: "def"}, {text: "abc"}, {text: "ghi"}]
+            });
+        });
+        it("second to first", () => {
+            expect(nodeReducer({
+                children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+            }, {
+                type: "move_node", path: [1], newPath: [0]
+            })).toEqual({
+                children: [{text: "def"}, {text: "abc"}, {text: "ghi"}]
+            });
+        });
+    });
 });

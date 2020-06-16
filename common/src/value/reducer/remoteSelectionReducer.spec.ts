@@ -1,6 +1,7 @@
 import {localSelectionReducer} from "./localSelectionReducer";
 import {remoteSelectionReducer} from "./remoteSelectionReducer";
 import {Path} from "../Path";
+import {Range} from "../Range";
 
 describe("Remote Selection Reducer", () => {
     describe("set_selection", () => {
@@ -242,6 +243,102 @@ describe("Remote Selection Reducer", () => {
         });
     });
     describe("set_node", () => {
-        it("no-op", () => {});
+        it("no-op", () => {
+            // if either anchor or focus is in original node, deselect.
+
+        });
+    });
+    describe("move_node", () => {
+        let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], start = [2, 2], within = [2, 4], withinChild = [2, 3, 2], end = [2, 5], next = [2, 6], parentNext = [4];
+
+        ([
+            ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [[3, 2], [3, 5]]],
+            ["parentPreviousChild-parent", [parentPreviousChild, parent], [[3, 2], [3, 5]]],
+            ["parentPreviousChild-previous", [parentPreviousChild, previous], [[2, 3], [2, 6]]],
+            ["parentPreviousChild-start", [parentPreviousChild, start], [[2, 3], [2, 6]]],
+            ["parentPreviousChild-within", [parentPreviousChild, within], [[2, 2], [2, 6]]],
+            ["parentPreviousChild-withinChild", [parentPreviousChild, withinChild], [start, end]],
+            ["parentPreviousChild-end", [parentPreviousChild, end], [[2, 2], [2, 6]]],
+            ["parentPreviousChild-next", [parentPreviousChild, next], [start, end]],
+            ["parentPreviousChild-parentNext", [parentPreviousChild, parentNext], [start, end]],
+
+            ["parentPrevious-previous", [parentPrevious, previous], [[1, 3], [1, 6]]],
+            ["parentPrevious-start", [parentPrevious, start], [[1, 3], [1, 6]]],
+            ["parentPrevious-within", [parentPrevious, within], [[1, 2], [1, 6]]],
+            ["parentPrevious-withinChild", [parentPrevious, withinChild], [[1, 2], [1, 5]]],
+            ["parentPrevious-end", [parentPrevious, end], [[1, 2], [1, 6]]],
+            ["parentPrevious-next", [parentPrevious, next], [[1, 2], [1, 5]]],
+            ["parentPrevious-parentNext", [parentPrevious, parentNext], [[1, 2], [1, 5]]],
+
+            ["parent-parentPreviousChild", [parent, parentPreviousChild], [[0, 1, 2], [0, 1, 5]]],
+
+            ["previous-parentPreviousChild", [previous, parentPreviousChild], [[2, 1], [2, 4]]],
+            ["previous-parentPrevious", [previous, parentPrevious], [[3, 1], [3, 4]]],
+            ["previous-parent", [previous, parent], [[3, 1], [3, 4]]],
+            ["previous-within", [previous, within], [[2, 1], [2, 5]]],
+            ["previous-withinChild", [previous, withinChild], [[2, 1], [2, 4]]],
+            ["previous-end", [previous, end], [[2, 1], [2, 5]]],
+            ["previous-next", [previous, next], [[2, 1], [2, 4]]],
+            ["previous-parentNext", [previous, parentNext], [[2, 1], [2, 4]]],
+
+            ["start-parentPreviousChild", [start, parentPreviousChild], [[0, 1], [2, 4]]],
+            ["start-parentPrevious", [start, parentPrevious], [[0], [3, 4]]],
+            ["start-parent", [start, parent], [[2], [3, 4]]],
+            ["start-withinChild", [start, withinChild], [[2, 2, 2], [2, 4]]],
+            ["start-end", [start, end], [[2, 4], [2, 5]]],
+            ["start-next", [start, next], [[2, 5], [2, 4]]],
+            ["start-parentNext", [start, parentNext], [[4], [2, 4]]],
+
+            ["within-parentPreviousChild", [within, parentPreviousChild], [[2, 2], [2, 4]]],
+            ["within-parentPrevious", [within, parentPrevious], [[3, 2], [3, 4]]],
+            ["within-parent", [within, parent], [[3, 2], [3, 4]]],
+            ["within-previous", [within, previous], [[2, 3], [2, 5]]],
+            ["within-start", [within, start], [[2, 3], [2, 5]]],
+            ["within-next", [within, next], [[2, 2], [2, 4]]],
+            ["within-parentNext", [within, parentNext], [[2, 2], [2, 4]]],
+
+            ["withinChild-parentPreviousChild", [withinChild, parentPreviousChild], [[2, 2], [2, 5]]],
+            ["withinChild-parentPrevious", [withinChild, parentPrevious], [[3, 2], [3, 5]]],
+            ["withinChild-parent", [withinChild, parent], [[3, 2], [3, 5]]],
+            ["withinChild-previous", [withinChild, previous], [[2, 3], [2, 6]]],
+            ["withinChild-start", [withinChild, start], [[2, 3], [2, 6]]],
+            ["withinChild-within", [withinChild, within], [[2, 2], [2, 6]]],
+            ["withinChild-end", [withinChild, end], [[2, 2], [2, 6]]],
+            ["withinChild-next", [withinChild, next], [[2, 2], [2, 5]]],
+            ["withinChild-parentNext", [withinChild, parentNext], [[2, 2], [2, 5]]],
+
+            ["end-parentPreviousChild", [end, parentPreviousChild], [[2, 2], [0, 1]]],
+            ["end-parentPrevious", [end, parentPrevious], [[3, 2], [0]]],
+            ["end-parent", [end, parent], [[3, 2], [2]]],
+            ["end-previous", [end, previous], [[2, 3], [2, 1]]],
+            ["end-start", [end, start], [[2, 3], [2, 2]]],
+            ["end-withinChild", [end, withinChild], [[2, 2], [2, 3, 2]]],
+            ["end-parentNext", [end, parentNext], [[2, 2], [4]]],
+
+            ["next-parentPreviousChild", [next, parentPreviousChild], [[2, 2], [2, 5]]],
+            ["next-parentPrevious", [next, parentPrevious], [[3, 2], [3, 5]]],
+            ["next-parent", [next, parent], [[3, 2], [3, 5]]],
+            ["next-previous", [next, previous], [[2, 3], [2, 6]]],
+            ["next-start", [next, start], [[2, 3], [2, 6]]],
+            ["next-within", [next, within], [[2, 2], [2, 6]]],
+            ["next-withinChild", [next, withinChild], [[2, 2], [2, 5]]],
+            ["next-parentNext", [next, parentNext], [[2, 2], [2, 5]]],
+
+            ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [[2, 2], [2, 5]]],
+            ["parentNext-parentPrevious", [parentNext, parentPrevious], [[3, 2], [3, 5]]],
+            ["parentNext-parent", [parentNext, parent], [[3, 2], [3, 5]]],
+            ["parentNext-previous", [parentNext, previous], [[2, 3], [2, 6]]],
+            ["parentNext-start", [parentNext, start], [[2, 3], [2, 6]]],
+            ["parentNext-within", [parentNext, within], [[2, 2], [2, 6]]],
+            ["parentNext-withinChild", [parentNext, withinChild], [[2, 2], [2, 5]]],
+            ["parentNext-end", [parentNext, end], [[2, 2], [2, 6]]],
+            ["parentNext-next", [parentNext, next], [[2, 2], [2, 5]]]
+        ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [path, newPath], [newStart, newEnd]]) => {
+            it(name, () => {
+                expect(localSelectionReducer({anchor: {path: start, offset: 5}, focus: {path: end, offset: 5}},
+                    {type: "move_node", path, newPath}
+                )).toEqual({anchor: {path: newStart, offset: 5}, focus: {path: newEnd, offset: 5}});
+            })
+        });
     });
 });

@@ -21,14 +21,7 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
         } else {
             return [operation];
         }
-    } else if (appliedOperation.type === "insert_node") {
-        let newPath = pathTransform(operation.path, appliedOperation)!;
-        if (newPath !== operation.path) {
-            return [{...operation, path: newPath}];
-        } else {
-            return [operation];
-        }
-    } else if (appliedOperation.type === "remove_node") {
+    } else {
         let newPath = pathTransform(operation.path, appliedOperation);
         if (newPath === null) return [];
         if (newPath !== operation.path) {
@@ -36,7 +29,5 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
         } else {
             return [operation];
         }
-    } else {
-        return [operation];
     }
 }
