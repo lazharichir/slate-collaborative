@@ -3,7 +3,7 @@ import {SetSelectionOperation} from "../action/Operation";
 import {Range} from "../Range";
 import {Path} from "../Path";
 import {Point} from "../Point";
-import {localSelectionReducer} from "../reducer/localSelectionReducer";
+import {Node} from "../Node";
 
 
 function properties(anchor: Point | null, focus: Point | null): Range | Partial<Range> | null {
@@ -34,6 +34,9 @@ describe("Operation Transformer", () => {
             it("no-op", () => {});
         });
         describe("move_node", () => {
+            it("no-op", () => {});
+        });
+        describe("split_node", () => {
             it("no-op", () => {});
         });
     });
@@ -127,6 +130,23 @@ describe("Operation Transformer", () => {
         });
         describe("move_node", () => {
             it("no-op", () => {});
+        });
+        describe("split_node", () => {
+            let before = 0, at = 1, after = 2, length = 3;
+            ([
+                ["before", before, at + length],
+                ["at", at, at],
+                ["after", after, at]
+            ] as [string, number, number][]).forEach(([name, offset, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: [0], position: at, properties: {}, target: null},
+                        {type: "insert_text", path: [0], offset, text: "abc"}
+                    )).toEqual([
+                        {type: "split_node", path: [0], position: output, properties: {}, target: null}
+                    ])
+                });
+            });
         });
     });
     describe("remove_text applied", () => {
@@ -262,6 +282,26 @@ describe("Operation Transformer", () => {
         });
         describe("move_node", () => {
             it("no-op", () => {});
+        });
+
+        describe("split_node", () => {
+            let before = 0, at = 2, after = 3;
+            ([
+                ["before-before", [before, "a"], at - 1],
+                ["before-at", [before, "ab"], at - 2],
+                ["before-after", [before, "abc"], at - 2],
+                ["at-after", [at, "c"], at],
+                ["after-after", [after, "de"], at]
+            ] as [string, [number, string], number][]).forEach(([name, [offset, text], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: [0], position: at, properties: {}, target: null},
+                        {type: "remove_text", path: [0], offset, text}
+                    )).toEqual([
+                        {type: "split_node", path: [0], position: output, properties: {}, target: null}
+                    ])
+                });
+            });
         });
     });
     describe("insert_node applied", () => {
@@ -453,7 +493,22 @@ describe("Operation Transformer", () => {
                     ]);
                 });
             });
-
+        });
+        describe("split_node", () => {
+            ([
+                ["before", [0], [2]],
+                ["at", [1], [2]],
+                ["after", [2], [1]]
+            ] as [string, Path, Path][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                        {type: "insert_node", path: input, node: {text: "abc"}}
+                    )).toEqual([
+                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                    ]);
+                });
+            });
         });
     });
     describe("remove_node applied", () => {
@@ -724,7 +779,24 @@ describe("Operation Transformer", () => {
                     )).toEqual([]);
                 });
             });
-        })
+        });
+
+        describe("split_node", () => {
+            ([
+                ["before", [0], [0]],
+                ["at", [1], null],
+                ["after", [2], [1]]
+            ] as [string, Path, Path | null][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                        {type: "remove_node", path: input, node: {text: "abc"}}
+                    )).toEqual(output === null ? [] : [
+                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                    ]);
+                });
+            });
+        });
     });
     describe("applied set_node", () => {
         describe("set_selection", () => {
@@ -738,7 +810,7 @@ describe("Operation Transformer", () => {
         });
         describe("insert_node", () => {
             it("no-op", () => {});
-        })
+        });
         describe("remove_node", () => {
             it("parent", () => {
                 expect(operationTransformer({
@@ -760,6 +832,9 @@ describe("Operation Transformer", () => {
             });
         });
         describe("move_node", () => {
+            it("no-op", () => {});
+        });
+        describe("split_node", () => {
             it("no-op", () => {});
         });
     });
@@ -888,6 +963,23 @@ describe("Operation Transformer", () => {
                         properties: properties({path: newStart, offset: 5}, null),
                         newProperties: properties({path: newStart, offset: 5}, null)
                     }]);
+                });
+            });
+
+            describe("split_node", () => {
+                ([
+                    ["before", [0], [0]],
+                    ["at", [1], null],
+                    ["after", [2], [1]]
+                ] as [string, Path, Path | null][]).forEach(([name, input, output]) => {
+                    it(name, () => {
+                        expect(operationTransformer(
+                            {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                            {type: "remove_node", path: input, node: {text: "abc"}}
+                        )).toEqual(output === null ? [] : [
+                            {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                        ]);
+                    });
                 });
             });
         });
@@ -1217,6 +1309,258 @@ describe("Operation Transformer", () => {
                         {type: "move_node", path: path, newPath: newPath}
                     )).toEqual([
                         {type: "move_node", path: output, newPath: output}
+                    ]);
+                });
+            });
+        });
+        describe("split_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], at = [2, 2], next = [2, 6], parentNext = [4];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [3, 2]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [3, 2]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [2, 3]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [2, 3]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [1, 3]],
+                ["parentPrevious-at", [parentPrevious, at], [1, 3]],
+                ["parentPrevious-next", [parentPrevious, next], [1, 2]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [1, 2]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [0, 1, 2]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [2, 1]],
+                ["previous-parentPrevious", [previous, parentPrevious], [3, 1]],
+                ["previous-parent", [previous, parent], [3, 1]],
+                ["previous-next", [previous, next], [2, 1]],
+                ["previous-parentNext", [previous, parentNext], [2, 1]],
+
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [2]],
+                ["at-next", [at, next], [2, 6]],
+                ["at-parentNext", [at, parentNext], [4]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [2, 2]],
+                ["next-parentPrevious", [next, parentPrevious], [3, 2]],
+                ["next-parent", [next, parent], [3, 2]],
+                ["next-previous", [next, previous], [2, 3]],
+                ["next-at", [next, at], [2, 3]],
+                ["next-parentNext", [next, parentNext], [2, 2]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [2, 2]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [3, 2]],
+                ["parentNext-parent", [parentNext, parent], [3, 2]],
+                ["parentNext-previous", [parentNext, previous], [2, 3]],
+                ["parentNext-at", [parentNext, at], [2, 3]],
+                ["parentNext-next", [parentNext, next], [2, 2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: at, position: 5, properties: {}, target: null},
+                        {type: "move_node", path: path, newPath: newPath}
+                    )).toEqual([
+                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                    ]);
+                });
+            });
+        });
+    });
+    describe("split_node applied", () => {
+        describe("set_selection", () => {
+            let before: Point = {path: [0], offset: 0}, at: Point = {path: [0], offset: 1}, after: Point = {path: [0], offset: 2};
+
+            let postBefore: Point = {path: [0], offset: 0}, postEnd: Point = {path: [0], offset: 1},  postStart: Point = {path: [1], offset: 0}, postAfter: Point = {path: [1], offset: 1};
+
+            let unspecified: Point | null = null;
+            ([
+                ["before-before", [before, before], [postBefore, postBefore]],
+                ["before-at", [before, at], [postBefore, postEnd]],
+                ["before-after", [before, after], [postBefore, postAfter]],
+                ["at-after", [at, after], [postStart, postAfter]],
+                ["after-after", [after, after], [postAfter, postAfter]],
+                ["at-before", [at, before], [postEnd, postBefore]],
+                ["after-before", [after, before], [postAfter, postBefore]],
+                ["after-at", [after, at], [postAfter, postStart]],
+                ["unspecified-before", [before, unspecified], [postBefore, unspecified]],
+                ["unspecified-at", [at, unspecified], [postStart, unspecified]],
+                ["unspecified-after", [after, unspecified], [postAfter, unspecified]],
+                ["before-unspecified", [unspecified, before], [unspecified, postBefore]],
+                ["at-unspecified", [unspecified, at], [unspecified, postStart]],
+                ["after-unspecified", [unspecified, after], [unspecified, postAfter]]
+            ] as [string, [Point | null, Point | null], [Point | null, Point | null]][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_selection", properties: properties(input[0], input[1]), newProperties: properties(input[0], input[1])} as SetSelectionOperation,
+                        {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "set_selection", properties: properties(output[0], output[1]), newProperties: properties(output[0], output[1])}
+                    ])
+                });
+            })
+        });
+        describe("insert_text", () => {
+            ([
+                ["before", [[0], 0], [[0], 0]],
+                ["at", [[0], 1], [[1], 0]],
+                ["after", [[0], 2], [[1], 1]]
+            ] as [string, [Path, number], [Path, number]][]).forEach(([name, [path, offset], [newPath, newOffset]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "insert_text", path, offset, text: "abc"},
+                        {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "insert_text", path: newPath, offset: newOffset, text: "abc"}
+                    ]);
+                });
+            });
+        });
+        describe("remove_text", () => {
+            ([
+                ["before-before", [[0], 0, "a"], [[[0], 0, "a"]]],
+                ["before-at", [[0], 0, "ab"], [[[0], 0, "ab"]]],
+                ["before-after", [[0], 0, "abc"], [[[0], 0, "ab"], [[1], 0, "c"]]],
+                ["at-after", [[0], 2, "c"], [[[1], 0, "c"]]],
+                ["after-after", [[0], 3, "d"], [[[1], 1, "d"]]]
+            ] as [string, [Path, number, string], [Path, number, string][]][]).forEach(([name, [path, offset, text], outputs]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "remove_text", path, offset, text},
+                        {type: "split_node", path: [0], position: 2, properties: {}, target: null}
+                    )).toEqual(outputs.map(([outputPath, outputOffset, outputText]) =>
+                        ({type: "remove_text", path: outputPath, offset: outputOffset, text: outputText})
+                    ))
+                });
+            })
+        });
+        describe("insert_node", () => {
+            ([
+                ["before", [0], [0]],
+                ["at", [1], [1]],
+                ["after", [2], [3]]
+            ] as [string, Path, Path][]).forEach(([name, path, newPath]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "insert_node", path, node: {text: "abc"}},
+                        {type: "split_node", path: [1], position: 5, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "insert_node", path: newPath, node: {text: "abc"}},
+                    ])
+                });
+            });
+        });
+        describe("remove_node", () => {
+            ([
+                ["before", [0], [[[0], {text: "abc"}]] ],
+                ["at", [1], [[[1], {text: "ab"}], [[2], {text: "c"}]]],
+                ["after", [2], [[[3], {text: "abc"}]]]
+            ] as [string, Path, [Path, Node][]][]).forEach(([name, path, outputs]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "remove_node", path, node: {text: "abc"}},
+                        {type: "split_node", path: [1], position: 2, properties: {}, target: null}
+                    )).toEqual(outputs.map(([newPath, newNode]) =>
+                        ({type: "remove_node", path: newPath, node: newNode})
+                    ));
+                });
+            });
+        });
+        describe("move_node", () => {
+            let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [1], previous = [1, 0], at = [1, 1], next = [1, 2], parentNext = [2];
+            ([
+                ["parentPreviousChild-parentPrevious", [parentPreviousChild, parentPrevious], [[0, 1], [0]]],
+                ["parentPreviousChild-parent", [parentPreviousChild, parent], [[0, 1], [1]]],
+                ["parentPreviousChild-previous", [parentPreviousChild, previous], [[0, 1], [1, 0]]],
+                ["parentPreviousChild-at", [parentPreviousChild, at], [[0, 1], [1, 1]]],
+                ["parentPreviousChild-next", [parentPreviousChild, next], [[0, 1], [1, 3]]],
+                ["parentPreviousChild-parentNext", [parentPreviousChild, parentNext], [[0, 1], [2]]],
+
+                ["parentPrevious-previous", [parentPrevious, previous], [[0], [1, 0]]],
+                ["parentPrevious-at", [parentPrevious, at], [[0], [1, 1]]],
+                ["parentPrevious-next", [parentPrevious, next], [[0], [1, 3]]],
+                ["parentPrevious-parentNext", [parentPrevious, parentNext], [[0], [2]]],
+
+                ["parent-parentPreviousChild", [parent, parentPreviousChild], [[1], [0, 1]]],
+
+                ["previous-parentPreviousChild", [previous, parentPreviousChild], [[1, 0], [0, 1]]],
+                ["previous-parentPrevious", [previous, parentPrevious], [[1, 0], [0]]],
+                ["previous-parent", [previous, parent], [[1, 0], [1]]],
+                ["previous-next", [previous, next], [[1, 0], [1, 3]]],
+                ["previous-parentNext", [previous, parentNext], [[1, 0], [2]]],
+
+                ["next-parentPreviousChild", [next, parentPreviousChild], [[1, 3], [0, 1]]],
+                ["next-parentPrevious", [next, parentPrevious], [[1, 3], [0]]],
+                ["next-parent", [next, parent], [[1, 3], [1]]],
+                ["next-previous", [next, previous], [[1, 3], [1, 0]]],
+                ["next-at", [next, at], [[1, 3], [1, 1]]],
+                ["next-parentNext", [next, parentNext], [[1, 3], [2]]],
+
+                ["parentNext-parentPreviousChild", [parentNext, parentPreviousChild], [[2], [0, 1]]],
+                ["parentNext-parentPrevious", [parentNext, parentPrevious], [[2], [0]]],
+                ["parentNext-parent", [parentNext, parent], [[2], [1]]],
+                ["parentNext-previous", [parentNext, previous], [[2], [1, 0]]],
+                ["parentNext-at", [parentNext, at], [[2], [1, 1]]],
+                ["parentNext-next", [parentNext, next], [[2], [1, 3]]],
+            ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [inputPath, inputNewPath], [outputPath, outputNewPath]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: inputPath, newPath: inputNewPath},
+                        {type: "split_node", path: [1, 1], position: 1, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "move_node", path: outputPath, newPath: outputNewPath},
+                    ]);
+                });
+            });
+
+            ([
+                ["at-parentPreviousChild", [at, parentPreviousChild], [0, 1]],
+                ["at-parentPrevious", [at, parentPrevious], [0]],
+                ["at-parent", [at, parent], [1]],
+                ["at-next", [at, next], [1, 2]],
+                ["at-parentNext", [at, parentNext], [2]],
+            ] as [string, [Path, Path], Path][]).forEach(([name, [inputPath, inputNewPath], outputNewPath]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: inputPath, newPath: inputNewPath},
+                        {type: "split_node", path: [1, 1], position: 1, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "merge_node", path: [1, 2], position: 1, properties: {}, target: null},
+                        {type: "move_node", path: [1, 1], newPath: inputNewPath},
+                        {type: "split_node", path: outputNewPath, position: 1, properties: {}, target: null}
+                    ]);
+                });
+            });
+        })
+        describe("set_node", () => {
+            ([
+                ["before", [0], [[0]]],
+                ["at", [1], [[1], [2]]],
+                ["after", [2], [[3]]]
+            ] as [string, Path, Path[]][]).forEach(([name, path, outputs]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_node", path, properties: {bold: undefined}, newProperties: {bold: true}},
+                        {type: "split_node", path: [1], position: 2, properties: {}, target: null}
+                    )).toEqual(outputs.map((newPath) =>
+                        ({type: "set_node", path: newPath, properties: {bold: undefined}, newProperties: {bold: true}})
+                    ));
+                });
+            });
+
+        })
+        describe("split_node", () => {
+            ([
+                ["beforeNode", [[0], 5], [[0], 5]],
+                ["afterNode", [[2], 5], [[3], 5]],
+                ["before", [[1], 0], [[1], 0]],
+                ["at", [[1], 1], [[2], 0]],
+                ["after", [[1], 2], [[2], 1]]
+            ] as [string, [Path, number], Path[]][]).forEach(([name, [path, position], [outputPath, outputPosition]]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path, position, properties: {}, target: null},
+                        {type: "split_node", path: [1], position: 1, properties: {}, target: null}
+                    )).toEqual([
+                        {type: "split_node", path: outputPath, position: outputPosition, properties: {}, target: null}
                     ]);
                 });
             });

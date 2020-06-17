@@ -147,7 +147,7 @@ export function nodeReducer(node: Node, action: Operation): Node {
         return nodeReducer(nodeReducer(node, removeNodeOperation), insertNodeOperation);
     }
 
-    throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${node}`);
+    throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${JSON.stringify(node)}`);
 }
 
 function applyNodeReducerToChildElement<T extends Node>(node: T, action: Exclude<Operation, SetSelectionOperation>): T {
@@ -160,5 +160,5 @@ function applyNodeReducerToChildElement<T extends Node>(node: T, action: Exclude
                 ...node.children.slice(action.path[0] + 1)
             ]
         });
-    } else throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${node}`);
+    } else throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${JSON.stringify(node)}`);
 }

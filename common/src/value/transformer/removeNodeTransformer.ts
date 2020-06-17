@@ -3,6 +3,7 @@ import {Path} from "../Path";
 import {nodeReducer} from "../reducer/nodeReducer";
 import {pathTransform} from "./pathTransformer";
 import {getNode} from "../reducer/getNode";
+import {Node} from "../Node";
 
 export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOperation: Operation): RemoveNodeOperation[] {
     if (appliedOperation.type === "set_selection") return [operation];
@@ -48,6 +49,35 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
                     return [operation];
                 }
             } else if (operation.path !== newPath) {
+                return [{...operation, path: newPath}];
+            } else {
+                return [operation];
+            }
+        }
+    } else if (appliedOperation.type === "split_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            if (Node.isText(operation.node)) {
+                return ([
+                    {...operation, node: {...operation.node, text: operation.node.text.substring(0, appliedOperation.position)}},
+                    {...operation, path: Path.next(operation.path), node: {...operation.node, ...appliedOperation.properties, text: operation.node.text.substring(appliedOperation.position)}}
+                ]);
+            } else if (Node.isElement(operation.node)) {
+                return ([
+                    {...operation, node: {...operation.node, children: operation.node.children.slice(0, appliedOperation.position)}},
+                    {...operation, path: Path.next(operation.path), node: {...operation.node, ...appliedOperation.properties, children: operation.node.children.slice(appliedOperation.position)}}
+                ])
+            }
+        } else if (Path.isAncestor(operation.path, appliedOperation.path)) {
+            let newNode = nodeReducer(operation.node, {...appliedOperation, path: appliedOperation.path.slice(operation.path.length)});
+            if (newNode !== operation.node) {
+                return [{...operation, node: newNode}];
+            } else {
+                return [operation];
+            }
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation)
+            if (newPath === null) return [];
+            if (newPath !== operation.path) {
                 return [{...operation, path: newPath}];
             } else {
                 return [operation];

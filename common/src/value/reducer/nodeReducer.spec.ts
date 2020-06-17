@@ -110,4 +110,18 @@ describe("Node Reducer", () => {
             });
         });
     });
+    describe("split_node", () => {
+        it("splits text", () => {
+            expect(nodeReducer(
+                {children: [{text: "abc"}, {text: "def"}]},
+                {type: "split_node", path: [1], position: 1, properties: {}, target: null}
+            )).toEqual({children: [{text: "abc"}, {text: "d"}, {text: "ef"}]});
+        });
+        it("splits nodes", () => {
+            expect(nodeReducer(
+                {children: [{children: [{text: "abc"}, {text: "def"}]}]},
+                {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+            )).toEqual({children: [{children: [{text: "abc"}]}, {children: [{text: "def"}]}]});
+        });
+    });
 });

@@ -341,4 +341,28 @@ describe("Remote Selection Reducer", () => {
             })
         });
     });
+    describe("split_node", () => {
+        let before = 0, at = 1, after = 2;
+        ([
+                ["before-before", [[[0], before], [[0], before]],  [[[0], before], [[0], before]]],
+                ["before-at", [[[0], before], [[0], at]],  [[[0], before], [[0], at]]],
+                ["before-after", [[[0], before], [[0], after]],  [[[0], before], [[1], after-at]]],
+                ["at-at", [[[0], at], [[0], at]],  [[[1], 0], [[1], 0]]],
+                ["at-after", [[[0], at], [[0], after]],  [[[1], 0], [[1], after-at]]],
+                ["after-after", [[[0], after], [[0], after]],  [[[1], after-at], [[1], after-at]]],
+                ["at-before", [[[0], at], [[0], before]],  [[[0], at], [[0], before]]],
+                ["after-before", [[[0], after], [[0], before]],  [[[1], after-at], [[0], before]]],
+                ["after-at", [[[0], after], [[0], at]],  [[[1], after-at], [[1], 0]]]
+            ] as [string, [[Path, number], [Path, number]], [[Path, number], [Path, number]]][]
+        ).forEach(([name, [inputAnchor, inputFocus], [outputAnchor,  outputFocus]]) => {
+            it(name, () => {
+                expect(localSelectionReducer(
+                    {anchor: {path: inputAnchor[0], offset: inputAnchor[1]}, focus: {path: inputFocus[0], offset: inputFocus[1]}},
+                    {type: "split_node", path: [0], position: at, properties: {}, target: null}
+                )).toEqual(
+                    {anchor: {path: outputAnchor[0], offset: outputAnchor[1]}, focus: {path: outputFocus[0], offset: outputFocus[1]}}
+                );
+            });
+        });
+    });
 });

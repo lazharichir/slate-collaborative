@@ -21,6 +21,34 @@ export function pointTransformer(point: Point, appliedOperation: Operation): Poi
         } else {
             return point;
         }
+    } else if (appliedOperation.type === "split_node") {
+        if (Path.equals(appliedOperation.path, point.path)) {
+            if (point.offset >= appliedOperation.position) {
+                let newPath = Path.next(point.path);
+                return {path: newPath, offset: point.offset - appliedOperation.position};
+            } else {
+                return point;
+            }
+        } else {
+            let newPath = pathTransform(point.path, appliedOperation)!;
+            if (newPath !== point.path) {
+                return {...point, path: newPath};
+            } else {
+                return point;
+            }
+        }
+    } else if (appliedOperation.type === "merge_node") {
+        if (Path.equals(appliedOperation.path, point.path)) {
+            let newPath = Path.previous(point.path);
+            return {path: newPath, offset: point.offset + appliedOperation.position};
+        } else {
+            let newPath = pathTransform(point.path, appliedOperation)!;
+            if (newPath !== point.path) {
+                return {...point, path: newPath};
+            } else {
+                return point;
+            }
+        }
     } else {
         let newPath = pathTransform(point.path, appliedOperation);
         if (newPath === null) return null;

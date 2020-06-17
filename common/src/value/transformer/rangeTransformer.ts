@@ -25,6 +25,28 @@ export function rangeTransformer(range: Range, appliedOperation: Operation): Ran
         } else {
             return range;
         }
+    } else if (appliedOperation.type === "split_node") {
+        let {anchor, focus} = range;
+        if (Path.equals(anchor.path, appliedOperation.path)) {
+            if (anchor.offset > appliedOperation.position || (anchor.offset === appliedOperation.position && !Point.isAfter(anchor, focus))) {
+                anchor = ({...anchor, path: Path.next(anchor.path), offset: anchor.offset - appliedOperation.position});
+            }
+        } else {
+            anchor = pointTransformer(anchor, appliedOperation)!
+        }
+        if (Path.equals(focus.path, appliedOperation.path)) {
+            if (focus.offset > appliedOperation.position || (focus.offset === appliedOperation.position && !Point.isAfter(focus, anchor))) {
+                focus = ({...focus, path: Path.next(focus.path), offset: focus.offset - appliedOperation.position});
+            }
+        } else {
+            focus = pointTransformer(focus, appliedOperation)!
+        }
+
+        if (anchor !== range.anchor || focus !== range.focus) {
+            return ({...range, anchor, focus});
+        } else {
+            return range;
+        }
     } else {
         let anchor = pointTransformer(range.anchor, appliedOperation);
         let focus = pointTransformer(range.focus, appliedOperation);

@@ -35,6 +35,26 @@ export function removeTextTransformer(operation: RemoveTextOperation, appliedOpe
         } else {
             return [operation];
         }
+    } else if (appliedOperation.type === "split_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            if (operation.offset + operation.text.length <= appliedOperation.position) {
+                return [operation];
+            } else if (operation.offset >= appliedOperation.position) {
+                return [{...operation, path: Path.next(operation.path), offset: operation.offset - appliedOperation.position}]
+            } else {
+                return [
+                    {...operation, text: operation.text.substring(0, appliedOperation.position - operation.offset) },
+                    {...operation, path: Path.next(operation.path), offset: 0, text: operation.text.substring(appliedOperation.position - operation.offset)}
+                ]
+            }
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation)!;
+            if (operation.path !== newPath) {
+                return [{...operation, path: newPath}];
+            } else {
+                return [operation];
+            }
+        }
     } else {
         let newPath = pathTransform(operation.path, appliedOperation);
         if (newPath === null) return [];

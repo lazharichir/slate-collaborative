@@ -21,6 +21,24 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
         } else {
             return [operation];
         }
+    } else if (appliedOperation.type === "split_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            if (appliedOperation.position <= operation.offset) {
+                return [{
+                    ...operation, path: Path.next(operation.path), offset: operation.offset - appliedOperation.position
+                }];
+            } else {
+                return [operation];
+            }
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation);
+            if (newPath === null) return [];
+            if (newPath !== operation.path) {
+                return [{...operation, path: newPath}];
+            } else {
+                return [operation];
+            }
+        }
     } else {
         let newPath = pathTransform(operation.path, appliedOperation);
         if (newPath === null) return [];
