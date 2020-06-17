@@ -277,7 +277,7 @@ describe("Remote Selection Reducer", () => {
             ["previous-parent", [previous, parent], [[3, 1], [3, 4]]],
             ["previous-within", [previous, within], [[2, 1], [2, 5]]],
             ["previous-withinChild", [previous, withinChild], [[2, 1], [2, 4]]],
-            ["previous-end", [previous, end], [[2, 1], [2, 5]]],
+            ["previous-end", [previous, end], [[2, 1], [2, 4]]],
             ["previous-next", [previous, next], [[2, 1], [2, 4]]],
             ["previous-parentNext", [previous, parentNext], [[2, 1], [2, 4]]],
 
@@ -285,8 +285,8 @@ describe("Remote Selection Reducer", () => {
             ["start-parentPrevious", [start, parentPrevious], [[0], [3, 4]]],
             ["start-parent", [start, parent], [[2], [3, 4]]],
             ["start-withinChild", [start, withinChild], [[2, 2, 2], [2, 4]]],
-            ["start-end", [start, end], [[2, 4], [2, 5]]],
-            ["start-next", [start, next], [[2, 5], [2, 4]]],
+            ["start-end", [start, end], [[2, 5], [2, 4]]],
+            ["start-next", [start, next], [[2, 6], [2, 4]]],
             ["start-parentNext", [start, parentNext], [[4], [2, 4]]],
 
             ["within-parentPreviousChild", [within, parentPreviousChild], [[2, 2], [2, 4]]],

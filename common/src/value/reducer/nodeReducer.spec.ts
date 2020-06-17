@@ -95,7 +95,7 @@ describe("Node Reducer", () => {
             expect(nodeReducer({
                 children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
             }, {
-                type: "move_node", path: [0], newPath: [2]
+                type: "move_node", path: [0], newPath: [1]
             })).toEqual({
                 children: [{text: "def"}, {text: "abc"}, {text: "ghi"}]
             });

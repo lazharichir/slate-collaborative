@@ -107,7 +107,6 @@ export function nodeReducer(node: Node, action: Operation): Node {
             }
         }
     } else if (action.type === "merge_node") {
-        debugger;
         if (action.path.length > 1) {
             return applyNodeReducerToChildElement(node, action);
         } else if (action.path.length === 1) {
@@ -144,7 +143,7 @@ export function nodeReducer(node: Node, action: Operation): Node {
     } else if (action.type === "move_node") {
         let targetNode = getNode(node, action.path);
         let removeNodeOperation: RemoveNodeOperation = {...action, type: "remove_node", path: action.path, node: targetNode};
-        let insertNodeOperation: InsertNodeOperation = {...action, type: "insert_node", path: pathTransform(action.newPath, removeNodeOperation)!, node: targetNode};
+        let insertNodeOperation: InsertNodeOperation = {...action, type: "insert_node", path: pathTransform(action.path, action)!, node: targetNode};
         return nodeReducer(nodeReducer(node, removeNodeOperation), insertNodeOperation);
     }
 
