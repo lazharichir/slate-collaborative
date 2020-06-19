@@ -42,14 +42,7 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
             }
         } else if (Path.isAncestor(operation.path, appliedOperation.newPath)) {
             let newPath = pathTransform(operation.path, appliedOperation)!;
-            if (appliedOperation.node !== undefined) {
-                let newNode = nodeReducer(operation.node, {...appliedOperation, type: "insert_node", path: appliedOperation.newPath.slice(operation.path.length), node: appliedOperation.node});
-                if (newNode !== operation.node || operation.path !== newPath) {
-                    return [{...operation, path: newPath, node: newNode}];
-                } else {
-                    return [operation];
-                }
-            } else if (operation.path !== newPath) {
+            if (operation.path !== newPath) {
                 return [{...operation, path: newPath}];
             } else {
                 return [operation];
