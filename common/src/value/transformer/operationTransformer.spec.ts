@@ -39,6 +39,9 @@ describe("Operation Transformer", () => {
         describe("split_node", () => {
             it("no-op", () => {});
         });
+        describe("merge_node", () => {
+            it("no-op", () => {});
+        });
     });
     describe("insert_text applied", () => {
         describe("set_selection", () => {
@@ -140,10 +143,28 @@ describe("Operation Transformer", () => {
             ] as [string, number, number][]).forEach(([name, offset, output]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path: [0], position: at, properties: {}, target: null},
+                        {type: "split_node", path: [0], position: at, properties: {}},
                         {type: "insert_text", path: [0], offset, text: "abc"}
                     )).toEqual([
-                        {type: "split_node", path: [0], position: output, properties: {}, target: null}
+                        {type: "split_node", path: [0], position: output, properties: {}}
+                    ])
+                });
+            });
+        });
+        describe("merge_node", () => {
+            let before = [[0], 0], atPre = [[0], 1], atPost = [[1], 0], after = [[1], 0], length = 3;
+            ([
+                ["before", before, 1+length],
+                ["atPre", atPre, 1+length],
+                ["atPost", atPost, 1],
+                ["after", after, 1]
+            ] as [string, [Path, number], number][]).forEach(([name, [path, offset], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "merge_node", path: [1], position: 1, properties: {}},
+                        {type: "insert_text", path, offset, text: "abc"}
+                    )).toEqual([
+                        {type: "merge_node", path: [1], position: output, properties: {}}
                     ])
                 });
             });
@@ -283,7 +304,6 @@ describe("Operation Transformer", () => {
         describe("move_node", () => {
             it("no-op", () => {});
         });
-
         describe("split_node", () => {
             let before = 0, at = 2, after = 3;
             ([
@@ -295,10 +315,28 @@ describe("Operation Transformer", () => {
             ] as [string, [number, string], number][]).forEach(([name, [offset, text], output]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path: [0], position: at, properties: {}, target: null},
+                        {type: "split_node", path: [0], position: at, properties: {}},
                         {type: "remove_text", path: [0], offset, text}
                     )).toEqual([
-                        {type: "split_node", path: [0], position: output, properties: {}, target: null}
+                        {type: "split_node", path: [0], position: output, properties: {}}
+                    ])
+                });
+            });
+        });
+
+        describe("merge_node", () => {
+            let before = [[0], 0], at = [[1], 0], after = [[1], 0], length = 2;
+            ([
+                ["before", before, 4-length],
+                ["at", at, 4],
+                ["after", after, 4]
+            ] as [string, [Path, number], number][]).forEach(([name, [path, offset], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "merge_node", path: [1], position: 4, properties: {}},
+                        {type: "remove_text", path, offset, text: "ab"}
+                    )).toEqual([
+                        {type: "merge_node", path: [1], position: output, properties: {}}
                     ])
                 });
             });
@@ -502,12 +540,38 @@ describe("Operation Transformer", () => {
             ] as [string, Path, Path][]).forEach(([name, input, output]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                        {type: "split_node", path: [1], position: 5, properties: {}},
                         {type: "insert_node", path: input, node: {text: "abc"}}
                     )).toEqual([
-                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                        {type: "split_node", path: output, position: 5, properties: {}}
                     ]);
                 });
+            });
+        });
+        describe("merge_node", () => {
+            it("before", () => {
+                expect(operationTransformer(
+                    {type: "insert_node", path: [0], node: {text: "abc"}},
+                    {type: "merge_node", path: [1], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "insert_node", path: [0], node: {text: "abc"}}
+                ]);
+            });
+            it("inbetween", () => {
+                expect(operationTransformer(
+                    {type: "insert_node", path: [1], node: {text: "abc"}},
+                    {type: "merge_node", path: [1], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "insert_node", path: [1], node: {text: "abc"}}
+                ]);
+            });
+            it("after", () => {
+                expect(operationTransformer(
+                    {type: "insert_node", path: [2], node: {text: "abc"}},
+                    {type: "merge_node", path: [1], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "insert_node", path: [1], node: {text: "abc"}}
+                ]);
             });
         });
     });
@@ -780,7 +844,6 @@ describe("Operation Transformer", () => {
                 });
             });
         });
-
         describe("split_node", () => {
             ([
                 ["before", [0], [0]],
@@ -789,12 +852,42 @@ describe("Operation Transformer", () => {
             ] as [string, Path, Path | null][]).forEach(([name, input, output]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                        {type: "split_node", path: [1], position: 5, properties: {}},
                         {type: "remove_node", path: input, node: {text: "abc"}}
                     )).toEqual(output === null ? [] : [
-                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                        {type: "split_node", path: output, position: 5, properties: {}}
                     ]);
                 });
+            });
+        });
+        describe("merge_node", () => {
+            it("before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "remove_node", path: [0], node: {text: "abc"}}
+                )).toEqual([
+                    {type: "merge_node", path: [1], position: 5, properties: {}},
+                ]);
+            });
+            it("current", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "remove_node", path: [1], node: {text: "abc"}}
+                )).toEqual([]);
+            });
+            it("target", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "remove_node", path: [2], node: {text: "abc"}}
+                )).toEqual([]);
+            });
+            it("after", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "remove_node", path: [1], node: {text: "abc"}}
+                )).toEqual([
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                ]);
             });
         });
     });
@@ -835,6 +928,9 @@ describe("Operation Transformer", () => {
             it("no-op", () => {});
         });
         describe("split_node", () => {
+            it("no-op", () => {});
+        });
+        describe("merge_node", () => {
             it("no-op", () => {});
         });
     });
@@ -974,10 +1070,10 @@ describe("Operation Transformer", () => {
                 ] as [string, Path, Path | null][]).forEach(([name, input, output]) => {
                     it(name, () => {
                         expect(operationTransformer(
-                            {type: "split_node", path: [1], position: 5, properties: {}, target: null},
+                            {type: "split_node", path: [1], position: 5, properties: {}},
                             {type: "remove_node", path: input, node: {text: "abc"}}
                         )).toEqual(output === null ? [] : [
-                            {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                            {type: "split_node", path: output, position: 5, properties: {}}
                         ]);
                     });
                 });
@@ -1356,12 +1452,134 @@ describe("Operation Transformer", () => {
             ] as [string, [Path, Path], Path][]).forEach(([name, [path, newPath], output]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path: at, position: 5, properties: {}, target: null},
+                        {type: "split_node", path: at, position: 5, properties: {}},
                         {type: "move_node", path: path, newPath: newPath}
                     )).toEqual([
-                        {type: "split_node", path: output, position: 5, properties: {}, target: null}
+                        {type: "split_node", path: output, position: 5, properties: {}}
                     ]);
                 });
+            });
+        });
+        describe("merge_node", () => {
+            it("before-before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [0], newPath: [1]}
+                )).toEqual([
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
+            });
+            it("before-target", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [0], newPath: [2]}
+                )).toEqual([
+                    {type: "move_node", path: [3], newPath: [2]},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                ]);
+            });
+            it("before-current", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [0], newPath: [3]}
+                )).toEqual([
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                ]);
+            });
+            it("before-after", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [0], newPath: [4]}
+                )).toEqual([
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                ]);
+            });
+            it("target-before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [2], newPath: [0]}
+                )).toEqual([
+                    {type: "move_node", path: [3], newPath: [1]},
+                    {type: "merge_node", path: [1], position: 5, properties: {}}
+                ]);
+            });
+            it("target-after", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [2], newPath: [4]}
+                )).toEqual([
+                    {type: "move_node", path: [2], newPath: [4]},
+                    {type: "merge_node", path: [4], position: 5, properties: {}}
+                ]);
+            });
+            it("after-before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [4], newPath: [0]}
+                )).toEqual([
+                    {type: "merge_node", path: [4], position: 5, properties: {}}
+                ]);
+            });
+            it("after-target", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [4], newPath: [2]}
+                )).toEqual([
+                    {type: "merge_node", path: [4], position: 5, properties: {}}
+                ]);
+            });
+            it("after-current", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [4], newPath: [3]}
+                )).toEqual([
+                    {type: "move_node", path: [4], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
+            });
+            it("after-target", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [4], newPath: [2]}
+                )).toEqual([
+                    {type: "merge_node", path: [4], position: 5, properties: {}}
+                ]);
+            });
+            it("after-current", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [4], newPath: [3]}
+                )).toEqual([
+                    {type: "move_node", path: [4], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
+            });
+            it("target-current", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [2], newPath: [3]},
+                )).toEqual([
+                    {type: "move_node", path: [2], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
+            });
+            it("current-before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [3], newPath: [0]},
+                )).toEqual([
+                    {type: "move_node", path: [0], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
+            });
+            it("current-target", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                    {type: "move_node", path: [3], newPath: [2]}
+                )).toEqual([
+                    {type: "move_node", path: [2], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                ]);
             });
         });
     });
@@ -1391,12 +1609,12 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "set_selection", properties: properties(input[0], input[1]), newProperties: properties(input[0], input[1])} as SetSelectionOperation,
-                        {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+                        {type: "split_node", path: [0], position: 1, properties: {}}
                     )).toEqual([
                         {type: "set_selection", properties: properties(output[0], output[1]), newProperties: properties(output[0], output[1])}
                     ])
                 });
-            })
+            });
         });
         describe("insert_text", () => {
             ([
@@ -1407,7 +1625,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "insert_text", path, offset, text: "abc"},
-                        {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+                        {type: "split_node", path: [0], position: 1, properties: {}}
                     )).toEqual([
                         {type: "insert_text", path: newPath, offset: newOffset, text: "abc"}
                     ]);
@@ -1425,7 +1643,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "remove_text", path, offset, text},
-                        {type: "split_node", path: [0], position: 2, properties: {}, target: null}
+                        {type: "split_node", path: [0], position: 2, properties: {}}
                     )).toEqual(outputs.map(([outputPath, outputOffset, outputText]) =>
                         ({type: "remove_text", path: outputPath, offset: outputOffset, text: outputText})
                     ))
@@ -1441,7 +1659,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "insert_node", path, node: {text: "abc"}},
-                        {type: "split_node", path: [1], position: 5, properties: {}, target: null}
+                        {type: "split_node", path: [1], position: 5, properties: {}}
                     )).toEqual([
                         {type: "insert_node", path: newPath, node: {text: "abc"}},
                     ])
@@ -1457,7 +1675,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "remove_node", path, node: {text: "abc"}},
-                        {type: "split_node", path: [1], position: 2, properties: {}, target: null}
+                        {type: "split_node", path: [1], position: 2, properties: {}}
                     )).toEqual(outputs.map(([newPath, newNode]) =>
                         ({type: "remove_node", path: newPath, node: newNode})
                     ));
@@ -1504,7 +1722,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "move_node", path: inputPath, newPath: inputNewPath},
-                        {type: "split_node", path: [1, 1], position: 1, properties: {}, target: null}
+                        {type: "split_node", path: [1, 1], position: 1, properties: {}}
                     )).toEqual([
                         {type: "move_node", path: outputPath, newPath: outputNewPath},
                     ]);
@@ -1521,11 +1739,11 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "move_node", path: inputPath, newPath: inputNewPath},
-                        {type: "split_node", path: [1, 1], position: 1, properties: {}, target: null}
+                        {type: "split_node", path: [1, 1], position: 1, properties: {}}
                     )).toEqual([
-                        {type: "merge_node", path: [1, 2], position: 1, properties: {}, target: null},
+                        {type: "merge_node", path: [1, 2], position: 1, properties: {}},
                         {type: "move_node", path: [1, 1], newPath: inputNewPath},
-                        {type: "split_node", path: outputNewPath, position: 1, properties: {}, target: null}
+                        {type: "split_node", path: outputNewPath, position: 1, properties: {}}
                     ]);
                 });
             });
@@ -1539,7 +1757,7 @@ describe("Operation Transformer", () => {
                 it(name, () => {
                     expect(operationTransformer(
                         {type: "set_node", path, properties: {bold: undefined}, newProperties: {bold: true}},
-                        {type: "split_node", path: [1], position: 2, properties: {}, target: null}
+                        {type: "split_node", path: [1], position: 2, properties: {}}
                     )).toEqual(outputs.map((newPath) =>
                         ({type: "set_node", path: newPath, properties: {bold: undefined}, newProperties: {bold: true}})
                     ));
@@ -1557,10 +1775,267 @@ describe("Operation Transformer", () => {
             ] as [string, [Path, number], Path[]][]).forEach(([name, [path, position], [outputPath, outputPosition]]) => {
                 it(name, () => {
                     expect(operationTransformer(
-                        {type: "split_node", path, position, properties: {}, target: null},
-                        {type: "split_node", path: [1], position: 1, properties: {}, target: null}
+                        {type: "split_node", path, position, properties: {}},
+                        {type: "split_node", path: [1], position: 1, properties: {}}
                     )).toEqual([
-                        {type: "split_node", path: outputPath, position: outputPosition, properties: {}, target: null}
+                        {type: "split_node", path: outputPath, position: outputPosition, properties: {}}
+                    ]);
+                });
+            });
+        });
+        describe("merge_node", () => {
+            ([
+                ["before", {path: [0], offset: 5}, {path: [0], offset: 5}],
+                ["current", {path: [1], offset: 5}, {path: [1], offset: 5}],
+                ["after", {path: [2], offset: 5}, {path: [3], offset: 5}]
+            ] as [string, Point, Point][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "merge_node", path: input.path, position: input.offset, properties: {}},
+                        {type: "split_node", path: [1], position: 3, properties: {}},
+                    )).toEqual([
+                        {type: "merge_node", path: output.path, position: output.offset, properties: {}}
+                    ]);
+                });
+            });
+        });
+    });
+    describe("merge_node applied", () => {
+        describe("set_selection", () => {
+            let before = {path: [0], offset: 1}, target = {path: [1], offset: 2}, current = {path: [2], offset: 3}, after = {path: [3], offset: 4}, unspecified = null;
+            ([
+                ["before-before", [before, before], [{path: [0], offset: 1}, {path: [0], offset: 1}]],
+                ["before-target", [before, target], [{path: [0], offset: 1}, {path: [1], offset: 2}]],
+                ["before-current", [before, current], [{path: [0], offset: 1}, {path: [1], offset: 8}]],
+                ["before-after", [before, after], [{path: [0], offset: 1}, {path: [2], offset: 4}]],
+                ["before-unspecified", [before, unspecified], [{path: [0], offset: 1}, null]],
+
+                ["target-target", [target, target], [{path: [1], offset: 2}, {path: [1], offset: 2}]],
+                ["target-current", [target, current], [{path: [1], offset: 2}, {path: [1], offset: 8}]],
+                ["target-after", [target, after], [{path: [1], offset: 2}, {path: [2], offset: 4}]],
+                ["target-unspecified", [target, unspecified], [{path: [1], offset: 2}, null]],
+
+                ["current-current", [current, current], [{path: [1], offset: 8}, {path: [1], offset: 8}]],
+                ["current-after", [current, after], [{path: [1], offset: 8}, {path: [2], offset: 4}]],
+                ["current-unspecified", [current, unspecified], [{path: [1], offset: 8}, null]],
+
+                ["after-after", [after, after], [{path: [2], offset: 4}, {path: [2], offset: 4}]],
+                ["after-unspecified", [after, unspecified], [{path: [2], offset: 4}, null]],
+
+                ["target-before", [target, before], [{path: [1], offset: 2}, {path: [0], offset: 1}]],
+                ["current-before", [current, before], [{path: [1], offset: 8}, {path: [0], offset: 1}]],
+                ["after-before", [after, before], [{path: [2], offset: 4}, {path: [0], offset: 1}]],
+                ["unspecified-before", [unspecified, before], [null, {path: [0], offset: 1}]],
+
+                ["current-target", [current, target], [{path: [1], offset: 8}, {path: [1], offset: 2}]],
+                ["after-target", [after, target], [{path: [2], offset: 4}, {path: [1], offset: 2}]],
+                ["unspecified-target", [unspecified, target], [null, {path: [1], offset: 2}]],
+
+                ["after-current", [after, current], [{path: [2], offset: 4}, {path: [1], offset: 8}]],
+                ["unspecified-current", [unspecified, current], [null, {path: [1], offset: 8}]],
+                ["unspecified-after", [unspecified, after], [null, {path: [2], offset: 4}]]
+            ] as [string, [Point | null, Point | null], [Point | null, Point | null]][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_selection", properties: properties(input[0], input[1]), newProperties: properties(input[0], input[1])} as SetSelectionOperation,
+                        {type: "merge_node", path: [2], position: 5, properties: {}}
+                    )).toEqual([
+                        {type: "set_selection", properties: properties(output[0], output[1]), newProperties: properties(output[0], output[1])}
+                    ]);
+                });
+            });
+        });
+        describe("insert_text", () => {
+            let beforeNode = [[0], 5], before = [[1], 0], after = [[2], 0], afterNode = [[3], 5];
+            ([
+                ["beforeNode", beforeNode, [[0], 5]],
+                ["before", before, [[1], 0]],
+                ["after", after, [[1], 4]],
+                ["afterAfter", afterNode, [[2], 5]]
+            ] as [string, [Path, number], [Path, number]][]).forEach(([name, [path, offset], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "insert_text", path, offset, text: "abc"},
+                        {type: "merge_node", path: [2], position: 4, properties: {}},
+                    )).toEqual([
+                        {type: "insert_text", path: output[0], offset: output[1], text: "abc"}
+                    ])
+                });
+            });
+        });
+        describe("remove_text", () => {
+            let beforeNode = [[0], 5], before = [[1], 0], after = [[2], 0], afterNode = [[3], 5];
+            ([
+                ["beforeNode", beforeNode, [[0], 5]],
+                ["before", before, [[1], 0]],
+                ["after", after, [[1], 4]],
+                ["afterAfter", afterNode, [[2], 5]]
+            ] as [string, [Path, number], [Path, number]][]).forEach(([name, [path, offset], output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "remove_text", path, offset, text: "ab"},
+                        {type: "merge_node", path: [2], position: 4, properties: {}},
+                    )).toEqual([
+                        {type: "remove_text", path: output[0], offset: output[1], text: "ab"}
+                    ])
+                });
+            });
+        });
+        describe("insert_node", () => {
+            it("before", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "insert_node", path: [1], node: {text: "abc"}}
+                )).toEqual([
+                    {type: "merge_node", path: [3], position: 5, properties: {}},
+                ]);
+            });
+            it("inbetween", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "insert_node", path: [2], node: {text: "abc"}}
+                )).toEqual([
+                    {type: "move_node", path: [3], newPath: [2]},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                ]);
+            });
+            it("after", () => {
+                expect(operationTransformer(
+                    {type: "merge_node", path: [2], position: 5, properties: {}},
+                    {type: "insert_node", path: [3], node: {text: "abc"}}
+                )).toEqual([
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                ]);
+            });
+        });
+        describe("remove_node", () => {
+            it("before", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [0], node: {text: "abc"}},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "remove_node", path: [0], node: {text: "abc"}}
+                ]);
+            });
+            it("target", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [1], node: {text: "abc"}},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "split_node", path: [1], position: 5, properties: {}},
+                    {type: "remove_node", path: [1], node: {text: "abc"}}
+                ]);
+            });
+            it("current", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [2], node: {text: "abc"}},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "split_node", path: [1], position: 5, properties: {}},
+                    {type: "remove_node", path: [2], node: {text: "abc"}}
+                ]);
+            });
+            it("after", () => {
+                expect(operationTransformer(
+                    {type: "remove_node", path: [3], node: {text: "abc"}},
+                    {type: "merge_node", path: [2], position: 5, properties: {}}
+                )).toEqual([
+                    {type: "remove_node", path: [2], node: {text: "abc"}}
+                ]);
+            });
+        });
+        describe("move_node", () => {
+            ([
+                ["before-before", [[0], [1]], [[0], [1]]],
+                ["before-target", [[0], [2]], [[0], [2]]],
+                ["before-current", [[0], [3]], [[0], [3]]],
+                ["before-after", [[0], [4]], [[0], [3]]],
+                ["target-before", [[2], [0]], [[2], [0]]],
+                ["target-after", [[2], [4]], [[2], [3]]],
+                ["after-before", [[4], [0]], [[3], [0]]],
+                ["after-target", [[4], [2]], [[3], [2]]],
+                ["after-current", [[5], [3]], [[4], [3]]]
+            ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "move_node", path: input[0], newPath: input[1]},
+                        {type: "merge_node", path: [3], position: 5, properties: {}}
+                    )).toEqual([
+                        {type: "move_node", path: output[0], newPath: output[1]}
+                    ]);
+                });
+            });
+
+            it("target-current", () => {
+                expect(operationTransformer(
+                    {type: "move_node", path: [2], newPath: [3]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                )).toEqual([]);
+            });
+
+            it("current-before", () => {
+                expect(operationTransformer(
+                    {type: "move_node", path: [3], newPath: [0]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                )).toEqual([]);
+            });
+            it("current-target", () => {
+                expect(operationTransformer(
+                    {type: "move_node", path: [3], newPath: [2]},
+                    {type: "merge_node", path: [3], position: 5, properties: {}}
+                )).toEqual([]);
+            });
+        });
+        describe("set_node", () => {
+            let before = [0], target = [1], current = [2], after = [3];
+            ([
+                ["before", before, [0]],
+                ["target", target, [1]],
+                ["current", current, null],
+                ["after", after, [2]],
+            ] as [string, Path, Path | null][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "set_node", path: input, properties: {}, newProperties: {}},
+                        {type: "merge_node", path: [2], position: 0, properties: {}}
+                    )).toEqual(output === null ? [] : [
+                        {type: "set_node", path: output, properties: {}, newProperties: {}}
+                    ]);
+                });
+            });
+        });
+        describe("split_node", () => {
+            ([
+                ["before", {path: [0], offset: 0}, {path: [0], offset: 0}],
+                ["target", {path: [1], offset: 3}, {path: [1], offset: 3}],
+                ["current:0", {path: [2], offset: 0}, {path: [1], offset: 5}],
+                ["current:5", {path: [2], offset: 3}, {path: [1], offset: 8}],
+                ["after", {path: [3], offset: 5}, {path: [2], offset: 5}]
+            ] as [string, Point, Point][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "split_node", path: input.path, position: input.offset, properties: {}},
+                        {type: "merge_node", path: [2], position: 5, properties: {}}
+                    )).toEqual([
+                        {type: "split_node", path: output.path, position: output.offset, properties: {}}
+                    ]);
+                });
+            });
+        });
+        describe("merge_node", () => {
+            ([
+                ["before", {path: [1], offset: 5}, {path: [1], offset: 5}],
+                ["target", {path: [2], offset: 5}, {path: [2], offset: 5}],
+                ["current", {path: [3], offset: 5}, null],
+                ["next", {path: [4], offset: 5}, {path: [3], offset: 13}],
+                ["after", {path: [5], offset: 5}, {path: [4], offset: 5}]
+            ] as [string, Point, Point | null][]).forEach(([name, input, output]) => {
+                it(name, () => {
+                    expect(operationTransformer(
+                        {type: "merge_node", path: input.path, position: input.offset, properties: {}},
+                        {type: "merge_node", path: [3], position: 8, properties: {}}
+                    )).toEqual(output === null ? [] : [
+                        {type: "merge_node", path: output.path, position: output.offset, properties: {}}
                     ]);
                 });
             });

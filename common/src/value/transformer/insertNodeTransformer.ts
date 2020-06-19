@@ -5,7 +5,7 @@ import {Path} from "../Path";
 export function insertNodeTransformer(operation: InsertNodeOperation, appliedOperation: Operation): InsertNodeOperation[] {
     if (appliedOperation.type === "set_selection" || appliedOperation.type === "set_node" || appliedOperation.type === "insert_text" || appliedOperation.type === "remove_text") return [operation];
 
-    if ((appliedOperation.type === "remove_node" || appliedOperation.type === "split_node") && Path.equals(appliedOperation.path, operation.path)) {
+    if ((appliedOperation.type === "remove_node" || appliedOperation.type === "split_node" || appliedOperation.type === "merge_node") && Path.equals(appliedOperation.path, operation.path)) {
         return [operation];
     }
 

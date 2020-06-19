@@ -39,6 +39,17 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
                 return [operation];
             }
         }
+    } else if (appliedOperation.type === "merge_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            return [{...operation, path: Path.previous(operation.path), offset: operation.offset + appliedOperation.position}];
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation)!;
+            if (newPath !== operation.path) {
+                return [{...operation, path: newPath}];
+            } else {
+                return [operation];
+            }
+        }
     } else {
         let newPath = pathTransform(operation.path, appliedOperation);
         if (newPath === null) return [];

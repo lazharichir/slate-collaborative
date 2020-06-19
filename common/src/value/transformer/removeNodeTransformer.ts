@@ -4,8 +4,9 @@ import {nodeReducer} from "../reducer/nodeReducer";
 import {pathTransform} from "./pathTransformer";
 import {getNode} from "../reducer/getNode";
 import {Node} from "../Node";
+import {operationInverter} from "../inverter/operationInverter";
 
-export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOperation: Operation): RemoveNodeOperation[] {
+export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOperation: Operation): Operation[] {
     if (appliedOperation.type === "set_selection") return [operation];
 
     if (appliedOperation.type === "insert_text" || appliedOperation.type === "remove_text") {
@@ -82,6 +83,10 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
             } else {
                 return [operation];
             }
+        }
+    } else if (appliedOperation.type === "merge_node") {
+        if (Path.equals(appliedOperation.path, operation.path) || Path.equals(Path.previous(appliedOperation.path), operation.path)) {
+            return [operationInverter(appliedOperation), operation];
         }
     }
 

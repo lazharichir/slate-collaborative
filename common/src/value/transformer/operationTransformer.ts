@@ -7,6 +7,7 @@ import {removeNodeTransformer} from "./removeNodeTransformer";
 import {setNodeTransformer} from "./setNodeTransformer";
 import {moveNodeTransformer} from "./moveNodeTransformer";
 import {splitNodeTransformer} from "./splitNodeTransformer";
+import {mergeNodeTransformer} from "./mergeNodeTransformer";
 
 export function operationTransformer(operation: Operation, appliedOperation: Operation): Operation[] {
     switch (operation.type) {
@@ -18,6 +19,7 @@ export function operationTransformer(operation: Operation, appliedOperation: Ope
         case "set_node": return setNodeTransformer(operation, appliedOperation);
         case "move_node": return moveNodeTransformer(operation, appliedOperation);
         case "split_node": return splitNodeTransformer(operation, appliedOperation);
+        case "merge_node": return mergeNodeTransformer(operation, appliedOperation);
         default: return [operation];
     }
 }

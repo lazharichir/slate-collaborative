@@ -244,7 +244,6 @@ describe("Local Selection Reducer", () => {
     describe("set_node", () => {
         it("no-op", () => {});
     });
-
     describe("move_node", () => {
         let parentPreviousChild = [0, 1], parentPrevious = [0], parent = [2], previous = [2, 1], start = [2, 2], within = [2, 4], withinChild = [2, 3, 2], end = [2, 5], next = [2, 6], parentNext = [4];
 
@@ -356,6 +355,32 @@ describe("Local Selection Reducer", () => {
                 expect(localSelectionReducer(
                     {anchor: {path: inputAnchor[0], offset: inputAnchor[1]}, focus: {path: inputFocus[0], offset: inputFocus[1]}},
                 {type: "split_node", path: [0], position: at, properties: {}, target: null}
+                )).toEqual(
+                    {anchor: {path: outputAnchor[0], offset: outputAnchor[1]}, focus: {path: outputFocus[0], offset: outputFocus[1]}}
+                );
+            });
+        });
+    });
+    describe("merge_node", () => {
+        let beforeNode = [[0], 5], afterNode = [[3], 5];
+        let before = [[1], 0], atPre = [[1], 1], atNext = [[2], 5], after = [[2], 1];
+        ([
+            ["beforeNode-afterNode", [beforeNode, afterNode], [[[0], 5], [[2], 5]]],
+            ["before-before", [before, before], [[[1], 0], [[1], 0]]],
+            ["before-atPre", [before, atPre], [[[1], 0], [[1], 1]]],
+            ["before-atNext", [before, atNext], [[[1], 0], [[1], 6]]],
+            ["before-after", [before, after], [[[1], 0], [[1], 2]]],
+            ["atPre-atPre", [atPre, atPre], [[[1], 1], [[1], 1]]],
+            ["atPre-atNext", [atPre, atNext], [[[1], 1], [[1], 6]]],
+            ["atPre-after", [atPre, after], [[[1], 1], [[1], 2]]],
+            ["atNext-atNext", [atNext, atNext], [[[1], 6], [[1], 6]]],
+            ["atNext-after", [atNext, after], [[[1], 6], [[1], 2]]],
+            ["after-after", [after, after], [[[1], 2], [[1], 2]]],
+        ] as [string, [[Path, number], [Path, number]], [[Path, number], [Path, number]]][]).forEach(([name, [anchor, focus], [outputAnchor, outputFocus]]) => {
+            it(name, () => {
+                expect(localSelectionReducer(
+                    {anchor: {path: anchor[0], offset: anchor[1]}, focus: {path: focus[0], offset: focus[1]}},
+                    {type: "merge_node", path: [2], position: 1, properties: {}, target: null}
                 )).toEqual(
                     {anchor: {path: outputAnchor[0], offset: outputAnchor[1]}, focus: {path: outputFocus[0], offset: outputFocus[1]}}
                 );

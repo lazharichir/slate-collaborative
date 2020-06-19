@@ -22,7 +22,6 @@ export type MergeNodeOperation = {
     type: 'merge_node',
     path: Path,
     position: number,
-    target: number | null,
     properties: Partial<Node>,
     [key: string]: unknown
 };
@@ -31,7 +30,6 @@ export type MoveNodeOperation = {
     type: 'move_node',
     path: Path,
     newPath: Path,
-    node?: Node
     [key: string]: unknown
 };
 
@@ -79,7 +77,6 @@ export type SplitNodeOperation = {
     type: 'split_node',
     path: Path,
     position: number,
-    target: number | null,
     properties: Partial<Node>,
     [key: string]: unknown
 };

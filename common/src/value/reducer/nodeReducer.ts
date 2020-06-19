@@ -48,7 +48,7 @@ export function nodeReducer(node: Node, action: Operation): Node {
         if (action.path.length > 1) {
             return applyNodeReducerToChildElement(node, action);
         } else {
-            if (Node.isElement(node) && 0 <= action.path[0] && action.path[0] < node.children.length && JSON.stringify(node.children[action.path[0]]) === JSON.stringify(action.node)) {
+            if (Node.isElement(node) && 0 <= action.path[0] && action.path[0] < node.children.length) {
                 return ({
                     ...node,
                     children: [

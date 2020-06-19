@@ -1,7 +1,5 @@
 import {Selection} from "../Selection";
 import {Operation} from "../action/Operation";
-import {Path} from "../Path";
-import {Point} from "../Point";
 import {rangeTransformer} from "../transformer/rangeTransformer";
 
 export function localSelectionReducer(state: Selection, action: Operation): Selection {

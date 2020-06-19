@@ -1,7 +1,5 @@
-import {localSelectionReducer} from "./localSelectionReducer";
 import {remoteSelectionReducer} from "./remoteSelectionReducer";
 import {Path} from "../Path";
-import {Range} from "../Range";
 
 describe("Remote Selection Reducer", () => {
     describe("set_selection", () => {
@@ -236,7 +234,7 @@ describe("Remote Selection Reducer", () => {
             ["parentNext-parentNext", [parentNext, parentNext], [parentNext, parentNext]]
         ] as [string, [Path, Path], [Path, Path] | null][]).forEach(([name, input, output]) => {
             it(name, () => {
-                expect(localSelectionReducer(input !== null ? {anchor: {path: input[0], offset: 5}, focus: {path: input[1], offset: 5}} : null,
+                expect(remoteSelectionReducer(input !== null ? {anchor: {path: input[0], offset: 5}, focus: {path: input[1], offset: 5}} : null,
                     {type: "remove_node", path: [1, 1], node: {text: "abc"}}
                 )).toEqual(output !== null ? {anchor: {path: output[0], offset: 5}, focus: {path: output[1], offset: 5}} : null);
             });
@@ -335,7 +333,7 @@ describe("Remote Selection Reducer", () => {
             ["parentNext-next", [parentNext, next], [[2, 2], [2, 5]]]
         ] as [string, [Path, Path], [Path, Path]][]).forEach(([name, [path, newPath], [newStart, newEnd]]) => {
             it(name, () => {
-                expect(localSelectionReducer({anchor: {path: start, offset: 5}, focus: {path: end, offset: 5}},
+                expect(remoteSelectionReducer({anchor: {path: start, offset: 5}, focus: {path: end, offset: 5}},
                     {type: "move_node", path, newPath}
                 )).toEqual({anchor: {path: newStart, offset: 5}, focus: {path: newEnd, offset: 5}});
             })
@@ -356,9 +354,35 @@ describe("Remote Selection Reducer", () => {
             ] as [string, [[Path, number], [Path, number]], [[Path, number], [Path, number]]][]
         ).forEach(([name, [inputAnchor, inputFocus], [outputAnchor,  outputFocus]]) => {
             it(name, () => {
-                expect(localSelectionReducer(
+                expect(remoteSelectionReducer(
                     {anchor: {path: inputAnchor[0], offset: inputAnchor[1]}, focus: {path: inputFocus[0], offset: inputFocus[1]}},
                     {type: "split_node", path: [0], position: at, properties: {}, target: null}
+                )).toEqual(
+                    {anchor: {path: outputAnchor[0], offset: outputAnchor[1]}, focus: {path: outputFocus[0], offset: outputFocus[1]}}
+                );
+            });
+        });
+    });
+    describe("merge_node", () => {
+        let beforeNode = [[0], 5], afterNode = [[3], 5];
+        let before = [[1], 0], atPre = [[1], 1], atNext = [[2], 0], after = [[2], 1];
+        ([
+            ["beforeNode-afterNode", [beforeNode, afterNode], [[[0], 5], [[2], 5]]],
+            ["before-before", [before, before], [[[1], 0], [[1], 0]]],
+            ["before-atPre", [before, atPre], [[[1], 0], [[1], 1]]],
+            ["before-atNext", [before, atNext], [[[1], 0], [[1], 1]]],
+            ["before-after", [before, after], [[[1], 0], [[1], 2]]],
+            ["atPre-atPre", [atPre, atPre], [[[1], 1], [[1], 1]]],
+            ["atPre-atNext", [atPre, atNext], [[[1], 1], [[1], 1]]],
+            ["atPre-after", [atPre, after], [[[1], 1], [[1], 2]]],
+            ["atNext-atNext", [atNext, atNext], [[[1], 1], [[1], 1]]],
+            ["atNext-after", [atNext, after], [[[1], 1], [[1], 2]]],
+            ["after-after", [after, after], [[[1], 2], [[1], 2]]],
+        ] as [string, [[Path, number], [Path, number]], [[Path, number], [Path, number]]][]).forEach(([name, [anchor, focus], [outputAnchor, outputFocus]]) => {
+            it(name, () => {
+                expect(remoteSelectionReducer(
+                    {anchor: {path: anchor[0], offset: anchor[1]}, focus: {path: focus[0], offset: focus[1]}},
+                    {type: "merge_node", path: [2], position: 1, properties: {}, target: null}
                 )).toEqual(
                     {anchor: {path: outputAnchor[0], offset: outputAnchor[1]}, focus: {path: outputFocus[0], offset: outputFocus[1]}}
                 );

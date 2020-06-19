@@ -113,15 +113,29 @@ describe("Node Reducer", () => {
     describe("split_node", () => {
         it("splits text", () => {
             expect(nodeReducer(
-                {children: [{text: "abc"}, {text: "def"}]},
-                {type: "split_node", path: [1], position: 1, properties: {}, target: null}
-            )).toEqual({children: [{text: "abc"}, {text: "d"}, {text: "ef"}]});
+                {children: [{text: "abc"}]},
+                {type: "split_node", path: [0], position: 1, properties: {}, target: null}
+            )).toEqual({children: [{text: "a"}, {text: "bc"}]});
         });
         it("splits nodes", () => {
             expect(nodeReducer(
                 {children: [{children: [{text: "abc"}, {text: "def"}]}]},
                 {type: "split_node", path: [0], position: 1, properties: {}, target: null}
             )).toEqual({children: [{children: [{text: "abc"}]}, {children: [{text: "def"}]}]});
+        });
+    });
+    describe("merge_node", () => {
+        it("merges text", () => {
+            expect(nodeReducer(
+                {children: [{text: "a"}, {text: "bc"}]},
+                {type: "merge_node", path: [1], position: 3, properties: {}, target: null}
+            )).toEqual({children: [{text: "abc"}]});
+        });
+        it("merges nodes", () => {
+            expect(nodeReducer(
+                {children: [{children: [{text: "abc"}]}, {children: [{text: "def"}]}]},
+                {type: "merge_node", path: [1], position: 1, properties: {}, target: null}
+            )).toEqual({children: [{children: [{text: "abc"}, {text: "def"}]}]});
         });
     });
 });

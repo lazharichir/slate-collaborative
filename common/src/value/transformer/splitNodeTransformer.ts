@@ -28,8 +28,23 @@ export function splitNodeTransformer(operation: SplitNodeOperation, appliedOpera
             if (appliedOperation.position > operation.position) {
                 return [operation];
             } else {
-                return [{...operation, path: Path.next(operation.path), position: operation.position - appliedOperation.position}]
+                return [{
+                    ...operation,
+                    path: Path.next(operation.path),
+                    position: operation.position - appliedOperation.position
+                }]
             }
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation)!;
+            if (operation.path !== newPath) {
+                return [{...operation, path: newPath}];
+            } else {
+                return [operation];
+            }
+        }
+    } else if (appliedOperation.type === "merge_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            return [{...operation, path: Path.previous(operation.path), position: operation.position + appliedOperation.position}];
         } else {
             let newPath = pathTransform(operation.path, appliedOperation)!;
             if (operation.path !== newPath) {

@@ -33,6 +33,17 @@ export function setNodeTransformer(operation: SetNodeOperation, appliedOperation
                 return [operation];
             }
         }
+    } else if (appliedOperation.type === "merge_node") {
+        if (Path.equals(appliedOperation.path, operation.path)) {
+            return [];
+        } else {
+            let newPath = pathTransform(operation.path, appliedOperation)!;
+            if (operation.path !== newPath) {
+                return [{...operation, path: newPath}]
+            } else {
+                return [operation];
+            }
+        }
     }
 
     let newPath = pathTransform(operation.path, appliedOperation);
