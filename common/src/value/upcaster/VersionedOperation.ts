@@ -20,7 +20,6 @@ export type VersionedMergeNodeOperation_1 = {
     type: 'merge_node',
     path: VersionedPath_1,
     position: number,
-    target: number | null,
     properties: Partial<VersionedNode_1>,
     [key: string]: unknown
 };
@@ -76,7 +75,6 @@ export type VersionedSplitNodeOperation_1 = {
     type: 'split_node',
     path: VersionedPath_1,
     position: number,
-    target: number | null,
     properties: Partial<VersionedNode_1>,
     [key: string]: unknown
 };
