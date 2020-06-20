@@ -103,6 +103,7 @@ export default function CollaborativeRichTextEditor(props: RichTextEditorProps) 
 }
 
 function toggleBlock(editor: Editor, format: Format) {
+    console.log("toggle", editor, format);
     const isActive = isBlockActive(editor, format)
     const isList = LIST_TYPES.includes(format)
 
@@ -134,7 +135,7 @@ const toggleMark = (editor: Editor, format: Format) => {
 function isBlockActive(editor: Editor, format: Format) {
     const match = Editor.nodes(editor, {
         match: n => n.type === format,
-    })[Symbol.iterator]();
+    })[Symbol.iterator]().next().value;
 
     return !!match
 }
