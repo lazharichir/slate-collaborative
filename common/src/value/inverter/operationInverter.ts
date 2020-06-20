@@ -45,8 +45,8 @@ export function operationInverter(operation: Operation): Operation {
             return operation;
         if (Path.isSibling(operation.newPath, operation.path))
             return ({...operation, type: "move_node", path: operation.newPath, newPath: operation.path});
-        const inversePath = pathTransform(operation.newPath, operation)!
-        const inverseNewPath = pathTransform(operation.path, operation)!
+        const inversePath = pathTransform(operation.path, operation)!
+        const inverseNewPath = pathTransform(Path.next(operation.path), operation)!
         return ({
             ...operation,
             type: "move_node",

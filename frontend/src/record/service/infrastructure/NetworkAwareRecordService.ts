@@ -11,6 +11,7 @@ import recordStoreReducer from "../reducer/recordStoreReducer";
 import {Changeset, ChangesetId} from "common/record/action/Changeset";
 import {ClientId} from "common/record/ClientId";
 import {changesetOptimizer} from "common/record/optimizer/changesetOptimizer";
+import {webSocketUrl} from "../../../config";
 
 export default class NetworkAwareRecordService implements RecordService {
     private readonly recordStores: {[key: string]: RecordStore} = {};
@@ -145,6 +146,7 @@ export default class NetworkAwareRecordService implements RecordService {
     }
 
     connect() {
+        if (!webSocketUrl) return;
         if (this.websocket) return;
 
         this.websocket = new RecordWebsocket();

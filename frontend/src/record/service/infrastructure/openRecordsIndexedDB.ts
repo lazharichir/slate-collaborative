@@ -1,6 +1,8 @@
 export default function openRecordsIndexedDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-        let database = indexedDB.open("records", 1);
+        if (!window.indexedDB) reject("indexedDB not available.");
+
+        let database = window.indexedDB.open("records", 1);
         database.addEventListener("upgradeneeded", (event) => {
             let db = database.result;
             switch (event.oldVersion) {

@@ -252,7 +252,6 @@ describe("Operation Transformer", () => {
             });
         });
         describe("remove_text", () => {
-            // ab|cde|fg
             const before = 0, start = 2, within = 3, end = 5, after = 6, length = 3;
             ([
                 ["before-before", [before, "a"], [before, "a"]],
@@ -1287,7 +1286,7 @@ describe("Operation Transformer", () => {
                     {type: "remove_node", path: [1, 1], node: {children: [{text: "abc"}, {text: "def"}]}},
                     {type: "move_node", path: [0], newPath: [1, 1, 0], node: {text: "ghi"}}
                 )).toEqual([
-                    {type: "remove_node", path: [0, 1], node: {children: [{text: "ghi"}, {text: "abc"}, {text: "def"}]}}
+                    {type: "remove_node", path: [0, 1], node: {children: [{text: "abc"}, {text: "def"}]}}
                 ]);
             })
             it("child1-parentNext", () => {

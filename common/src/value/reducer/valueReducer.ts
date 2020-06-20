@@ -4,13 +4,15 @@ import {Node} from "../Node";
 import {nodeReducer} from "./nodeReducer";
 
 export function valueReducer(state: Value, action: Operation): Value {
-    try {
-        if (Node.isElement(state)) {
+    if (action.type === "set_selection") return state;
+
+    if (Node.isElement(state)) {
+        try {
             return nodeReducer(state, action) as Value;
-        } else {
-            return state;
+        } catch (e) {
+            throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${JSON.stringify(state)}.`);
         }
-    } catch (e) {
-        throw new Error(`Cannot apply operation ${JSON.stringify(action)} on ${JSON.stringify(state)}.`);
+    } else {
+        throw new Error(`Cannot apply ${JSON.stringify(action)} on ${JSON.stringify(state)}`);
     }
 }

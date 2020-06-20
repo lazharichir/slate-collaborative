@@ -4,11 +4,7 @@ import {Path} from "../Path";
 import {pathTransform} from "../transformer/pathTransformer";
 import {getNode} from "./getNode";
 
-export function nodeReducer(node: Node, action: Operation): Node {
-    if (action.type === "set_selection") {
-        return node;
-    }
-
+export function nodeReducer(node: Node, action: Exclude<Operation, SetSelectionOperation>): Node {
     if (action.type === "insert_text") {
         if (action.path.length > 0) {
             return applyNodeReducerToChildElement(node, action);
