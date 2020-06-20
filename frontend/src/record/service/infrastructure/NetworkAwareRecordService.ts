@@ -160,15 +160,13 @@ export default class NetworkAwareRecordService implements RecordService {
                 this.recordStoreStorage.save(id, this.recordStores[id]).then();
             } else if (response.type === "changeset_applied") {
                 let {id, changeset} = response;
-                let {inProgressChangeset} = this.recordStores[id];
                 this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "apply_remote_changeset", changeset});
 
                 if (this.recordStores[id].inProgressChangeset === null) {
                     this.sendOutstandingChangesets(id);
                 }
-                if (inProgressChangeset === null || changeset.id !== inProgressChangeset.id) {
-                    this.broadcast(id);
-                }
+
+                this.broadcast(id);
                 this.recordStoreStorage.save(id, this.recordStores[id]).then();
             }
         });

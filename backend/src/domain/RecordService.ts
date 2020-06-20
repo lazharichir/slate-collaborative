@@ -22,7 +22,7 @@ export default class RecordService {
                     return null; // already applied
                 }
 
-                changeset = changesetTransformer(changeset, appliedChangeset, true);
+                changeset = changesetTransformer(changeset, appliedChangeset, false);
             }
         }
 

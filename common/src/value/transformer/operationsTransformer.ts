@@ -5,8 +5,8 @@ export function operationsTransformer(leftOperations: Operation[], topOperations
     if (leftOperations.length === 0 || topOperations.length === 0) {
         return [leftOperations, topOperations];
     } else if (leftOperations.length === 1 && topOperations.length === 1) {
-        let right = operationTransformer(leftOperations[0], topOperations[0], !winBreaker);
-        let bottom = operationTransformer(topOperations[0], leftOperations[0], winBreaker);
+        let right = operationTransformer(leftOperations[0], topOperations[0], winBreaker);
+        let bottom = operationTransformer(topOperations[0], leftOperations[0], !winBreaker);
         return [right, bottom];
     } else {
         let bottomOperations: Operation[] = [];
