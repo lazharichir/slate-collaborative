@@ -7,8 +7,8 @@ export function changesetsTransformer(leftChangesets: Changeset[], topChangesets
     for (const leftChangeset of leftChangesets) {
         bottomChangesets = [];
         for (const topChangeset of topChangesets) {
-            bottomChangesets = [...bottomChangesets, changesetTransformer(topChangeset, leftChangeset)];
-            rightChangesets = [...rightChangesets, changesetTransformer(leftChangeset, topChangeset)];
+            bottomChangesets = [...bottomChangesets, changesetTransformer(topChangeset, leftChangeset, true)];
+            rightChangesets = [...rightChangesets, changesetTransformer(leftChangeset, topChangeset, false)];
         }
         topChangesets = bottomChangesets;
     }
