@@ -6,6 +6,10 @@ import {Operation} from "common/value/action/Operation";
 import {changesetInverter} from "common/record/inverter/changesetInverter";
 import {changesetsTransformer} from "common/record/transformer/changesetsTransformer";
 
+function incrementVersion(changeset: Changeset) {
+    return ({...changeset, version: changeset.version + 1});
+}
+
 export default function recordStoreReducer(recordStore: RecordStore, action: RecordStoreAction): RecordStore {
     let {remoteRecord, unprocessedChangesets, localRecord, inProgressChangeset, outstandingChangesets, undoQueue, redoQueue} = recordStore;
     if (action.type === "load_remote_record") {
@@ -29,10 +33,11 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
         localRecord = recordReducer(recordStore.localRecord, outstandingChangeset);
         outstandingChangesets = [...recordStore.outstandingChangesets, outstandingChangeset];
 
-        undoQueue = changesetsTransformer(undoQueue, [outstandingChangeset])[0];
-        redoQueue = changesetsTransformer(redoQueue, [outstandingChangeset])[0];
+        undoQueue = [changesetInverter(outstandingChangeset), ...undoQueue.map(incrementVersion)].map(incrementVersion);
         if (action.operations.some(Operation.isMutationOperation)) {
             redoQueue = [];
+        } else {
+            redoQueue = redoQueue.map(incrementVersion);
         }
     } else if (action.type === "apply_remote_changeset") {
         if (remoteRecord.version < action.changeset.version) {
@@ -72,6 +77,15 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
             }
         }
     } else if (action.type === "send_changeset") {
+        undoQueue = undoQueue.map(changeset => ({
+            ...changeset,
+            version: changeset.version + action.outstandingChangesets.length - outstandingChangesets.length + 1
+        }));
+        redoQueue = redoQueue.map(changeset => ({
+            ...changeset,
+            version: changeset.version + action.outstandingChangesets.length - outstandingChangesets.length + 1
+        }));
+
         inProgressChangeset = action.inProgressChangeset;
         outstandingChangesets = action.outstandingChangesets;
 
@@ -85,14 +99,14 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
     } else if (action.type === "apply_undo") {
         while (undoQueue.length > 0) {
             let undoChangeset = {
-                ...undoQueue[undoQueue.length - 1],
+                ...undoQueue[0],
                 id: ChangesetId.generate(),
                 clientId: action.clientId,
                 version: localRecord.version + 1
             };
-            undoQueue = undoQueue.slice(0, -1);
-            redoQueue = [...redoQueue, changesetInverter(undoChangeset)];
 
+            undoQueue = undoQueue.slice(1);
+            redoQueue = [changesetInverter(undoChangeset), ...redoQueue.map(incrementVersion)].map(incrementVersion);
             outstandingChangesets = [...outstandingChangesets, undoChangeset];
             localRecord = recordReducer(localRecord, undoChangeset)
 
@@ -102,14 +116,14 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
     } else if (action.type === "apply_redo") {
         while (redoQueue.length > 0) {
             let redoChangeset: Changeset = {
-                ...redoQueue[redoQueue.length - 1],
+                ...redoQueue[0],
                 id: ChangesetId.generate(),
                 clientId: action.clientId,
                 version: localRecord.version + 1
             };
-            redoQueue = redoQueue.slice(0, -1);
 
-            undoQueue = [...undoQueue, changesetInverter(redoChangeset)];
+            redoQueue = redoQueue.slice(1);
+            undoQueue = [changesetInverter(redoChangeset), ...undoQueue.map(incrementVersion)].map(incrementVersion);
             outstandingChangesets = [...outstandingChangesets, redoChangeset];
             localRecord = recordReducer(localRecord, redoChangeset);
 

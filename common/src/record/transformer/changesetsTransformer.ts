@@ -2,6 +2,8 @@ import {Changeset} from "../action/Changeset";
 import changesetTransformer from "./changesetTransformer";
 
 export function changesetsTransformer(leftChangesets: Changeset[], topChangesets: Changeset[]): [Changeset[], Changeset[]] {
+    if (leftChangesets.length === 0 || topChangesets.length === 0) return [leftChangesets, topChangesets];
+
     let bottomChangesets: Changeset[] = [];
     let rightChangesets: Changeset[] = [];
     for (const leftChangeset of leftChangesets) {
