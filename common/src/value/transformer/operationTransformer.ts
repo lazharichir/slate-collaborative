@@ -9,17 +9,16 @@ import {moveNodeTransformer} from "./moveNodeTransformer";
 import {splitNodeTransformer} from "./splitNodeTransformer";
 import {mergeNodeTransformer} from "./mergeNodeTransformer";
 
-export function operationTransformer(operation: Operation, appliedOperation: Operation): Operation[] {
+export function operationTransformer(operation: Operation, appliedOperation: Operation, tieBreaker: boolean): Operation[] {
     switch (operation.type) {
-        case "set_selection": return setSelectionTransformer(operation, appliedOperation);
-        case "insert_text": return insertTextTransformer(operation, appliedOperation);
-        case "remove_text": return removeTextTransformer(operation, appliedOperation);
-        case "insert_node": return insertNodeTransformer(operation, appliedOperation);
-        case "remove_node": return removeNodeTransformer(operation, appliedOperation);
-        case "set_node": return setNodeTransformer(operation, appliedOperation);
-        case "move_node": return moveNodeTransformer(operation, appliedOperation);
-        case "split_node": return splitNodeTransformer(operation, appliedOperation);
-        case "merge_node": return mergeNodeTransformer(operation, appliedOperation);
-        default: return [operation];
+        case "set_selection": return setSelectionTransformer(operation, appliedOperation, tieBreaker);
+        case "insert_text": return insertTextTransformer(operation, appliedOperation, tieBreaker);
+        case "remove_text": return removeTextTransformer(operation, appliedOperation, tieBreaker);
+        case "insert_node": return insertNodeTransformer(operation, appliedOperation, tieBreaker);
+        case "remove_node": return removeNodeTransformer(operation, appliedOperation, tieBreaker);
+        case "set_node": return setNodeTransformer(operation, appliedOperation, tieBreaker);
+        case "move_node": return moveNodeTransformer(operation, appliedOperation, tieBreaker);
+        case "split_node": return splitNodeTransformer(operation, appliedOperation, tieBreaker);
+        case "merge_node": return mergeNodeTransformer(operation, appliedOperation, tieBreaker);
     }
 }

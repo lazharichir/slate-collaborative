@@ -6,47 +6,28 @@ import {getNode} from "../reducer/getNode";
 import {Node} from "../Node";
 import {operationInverter} from "../inverter/operationInverter";
 
-export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOperation: Operation): Operation[] {
-    if (appliedOperation.type === "set_selection") return [operation];
-
-    if (appliedOperation.type === "insert_text" || appliedOperation.type === "remove_text") {
+export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOperation: Operation, _: boolean): Operation[] {
+    if (appliedOperation.type === "set_selection") {
+        return [operation];
+    } else if (appliedOperation.type === "insert_text" || appliedOperation.type === "remove_text") {
         if (Path.isAncestor(operation.path, appliedOperation.path) || Path.equals(appliedOperation.path, operation.path)) {
             let newNode = nodeReducer(operation.node, {...appliedOperation, path: appliedOperation.path.slice(operation.path.length)});
-            if (newNode !== operation.node) {
-                return [{...operation, node: newNode}];
-            } else {
-                return [operation];
-            }
+            return [{...operation, node: newNode}];
         }
-    }
-
-    if (appliedOperation.type === "move_node") {
+    } else if (appliedOperation.type === "move_node") {
         if (Path.isAncestor(operation.path, appliedOperation.path) && Path.isAncestor(operation.path, appliedOperation.newPath)) {
             let newNode = nodeReducer(operation.node, {...appliedOperation, path: appliedOperation.path.slice(operation.path.length), newPath: appliedOperation.newPath.slice(operation.path.length)});
-            if (newNode !== operation.node) {
-                return [{...operation, node: newNode}];
-            } else {
-                return [operation];
-            }
+            return [{...operation, node: newNode}];
         } else if (Path.isAncestor(operation.path, appliedOperation.path)) {
             let newPath = pathTransform(operation.path, appliedOperation)!;
             let newNode = nodeReducer(operation.node, {...appliedOperation, type: "remove_node", path: appliedOperation.path.slice(operation.path.length), node: getNode(
                     operation.node,
                     appliedOperation.path.slice(operation.path.length)
                 )});
-
-            if (newNode !== operation.node || operation.path !== newPath) {
-                return [{...operation, path: newPath, node: newNode}];
-            } else {
-                return [operation];
-            }
+            return [{...operation, path: newPath, node: newNode}];
         } else if (Path.isAncestor(operation.path, appliedOperation.newPath)) {
             let newPath = pathTransform(operation.path, appliedOperation)!;
-            if (operation.path !== newPath) {
-                return [{...operation, path: newPath}];
-            } else {
-                return [operation];
-            }
+            return [{...operation, path: newPath}];
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
@@ -63,14 +44,9 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
             }
         } else if (Path.isAncestor(operation.path, appliedOperation.path)) {
             let newNode = nodeReducer(operation.node, {...appliedOperation, path: appliedOperation.path.slice(operation.path.length)});
-            if (newNode !== operation.node) {
-                return [{...operation, node: newNode}];
-            } else {
-                return [operation];
-            }
+            return [{...operation, node: newNode}];
         } else {
-            let newPath = pathTransform(operation.path, appliedOperation)
-            if (newPath === null) return [];
+            let newPath = pathTransform(operation.path, appliedOperation)!
             if (newPath !== operation.path) {
                 return [{...operation, path: newPath}];
             } else {
@@ -85,11 +61,7 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
 
     if (Path.isAncestor(operation.path, appliedOperation.path)) {
         let newNode = nodeReducer(operation.node, {...appliedOperation, path: appliedOperation.path.slice(operation.path.length)});
-        if (newNode !== operation.node) {
-            return [{...operation, node: newNode}];
-        } else {
-            return [operation];
-        }
+        return [{...operation, node: newNode}];
     } else {
         let newPath = pathTransform(operation.path, appliedOperation)
         if (newPath === null) return [];
@@ -99,6 +71,4 @@ export function removeNodeTransformer(operation: RemoveNodeOperation, appliedOpe
             return [operation];
         }
     }
-
-    return [operation];
 }

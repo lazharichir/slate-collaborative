@@ -2,7 +2,7 @@ import {Operation, SetNodeOperation} from "../action/Operation";
 import {pathTransform} from "./pathTransformer";
 import {Path} from "../Path";
 
-export function setNodeTransformer(operation: SetNodeOperation, appliedOperation: Operation): SetNodeOperation[] {
+export function setNodeTransformer(operation: SetNodeOperation, appliedOperation: Operation, _: boolean): SetNodeOperation[] {
     if (appliedOperation.type === "set_node") {
         let properties = operation.properties;
         for (let key in properties) {
@@ -10,9 +10,7 @@ export function setNodeTransformer(operation: SetNodeOperation, appliedOperation
                 properties = {...properties, [key]: appliedOperation.newProperties[key]};
             }
         }
-        if (properties !== operation.properties) {
-            return [{...operation, properties}];
-        } else {return [operation]}
+        return [{...operation, properties}];
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
             let properties = operation.properties;

@@ -6,7 +6,10 @@ Resources:
     RecordChangesetTable:
         Type: AWS::DynamoDB::Table
         Properties:
-            BillingMode: PAY_PER_REQUEST
+            BillingMode: PROVISIONED
+            ProvisionedThroughput:
+                ReadCapacityUnits: 10
+                WriteCapacityUnits: 10
             AttributeDefinitions:
             -   AttributeName: id
                 AttributeType: S
@@ -20,7 +23,10 @@ Resources:
     RecordTable:
         Type: AWS::DynamoDB::Table
         Properties:
-            BillingMode: PAY_PER_REQUEST
+            BillingMode: PROVISIONED
+            ProvisionedThroughput:
+                ReadCapacityUnits: 10
+                WriteCapacityUnits: 10
             AttributeDefinitions:
             -   AttributeName: id
                 AttributeType: S
@@ -30,7 +36,10 @@ Resources:
     RecordConnectionTable:
         Type: AWS::DynamoDB::Table
         Properties:
-            BillingMode: PAY_PER_REQUEST
+            BillingMode: PROVISIONED
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
             AttributeDefinitions:
             -   AttributeName: id
                 AttributeType: S
@@ -48,6 +57,9 @@ Resources:
                     KeyType: HASH
                 Projection:
                     ProjectionType: KEYS_ONLY
+                ProvisionedThroughput:
+                    ReadCapacityUnits: 5
+                    WriteCapacityUnits: 5
     BackendRole:
         Type: AWS::IAM::Role
         Properties:

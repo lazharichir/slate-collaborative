@@ -41,52 +41,52 @@ describe("Node Reducer", () => {
     describe("insert_node", () => {
         it("beginning", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}]
-                }, {type: "insert_node", path: [0], node: {text: "ghi"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}]}]
+                }, {type: "insert_node", path: [0, 0], node: {text: "ghi"}}
             )).toEqual({
-                children: [{text: "ghi"}, {text: "abc"}, {text: "def"}]
+                children: [{children: [{text: "ghi"}, {text: "abc"}, {text: "def"}]}]
             });
         });
         it("in-between", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}]
-                }, {type: "insert_node", path: [1], node: {text: "ghi"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}]}]
+                }, {type: "insert_node", path: [0, 1], node: {text: "ghi"}}
             )).toEqual({
-                children: [{text: "abc"}, {text: "ghi"}, {text: "def"}]
+                children: [{children: [{text: "abc"}, {text: "ghi"}, {text: "def"}]}]
             });
         });
         it("at the end", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}]
-                }, {type: "insert_node", path: [2], node: {text: "ghi"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}]}]
+                }, {type: "insert_node", path: [0, 2], node: {text: "ghi"}}
             )).toEqual({
-                children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
+                children: [{children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]}]
             });
         });
     });
     describe("remove_node", () => {
         it("removes node at beginning", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
-                }, {type: "remove_node", path: [0], node: {text: "abc"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]}]
+                }, {type: "remove_node", path: [0, 0], node: {text: "abc"}}
             )).toEqual({
-                children: [{text: "def"}, {text: "ghi"}]
+                children: [{children: [{text: "def"}, {text: "ghi"}]}]
             });
         })
         it("removes node in middle", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
-                }, {type: "remove_node", path: [1], node: {text: "def"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]}]
+                }, {type: "remove_node", path: [0, 1], node: {text: "def"}}
             )).toEqual({
-                children: [{text: "abc"}, {text: "ghi"}]
+                children: [{children: [{text: "abc"}, {text: "ghi"}]}]
             });
         })
         it("removes node at end", () => {
             expect(nodeReducer({
-                    children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]
-                }, {type: "remove_node", path: [2], node: {text: "ghi"}}
+                    children: [{children: [{text: "abc"}, {text: "def"}, {text: "ghi"}]}]
+                }, {type: "remove_node", path: [0, 2], node: {text: "ghi"}}
             )).toEqual({
-                children: [{text: "abc"}, {text: "def"}]
+                children: [{children: [{text: "abc"}, {text: "def"}]}]
             });
         })
     });
@@ -113,9 +113,9 @@ describe("Node Reducer", () => {
     describe("split_node", () => {
         it("splits text", () => {
             expect(nodeReducer(
-                {children: [{text: "abc"}]},
-                {type: "split_node", path: [0], position: 1, properties: {}, target: null}
-            )).toEqual({children: [{text: "a"}, {text: "bc"}]});
+                {children: [{children: [{text: "abc"}]}]},
+                {type: "split_node", path: [0, 0], position: 1, properties: {}, target: null}
+            )).toEqual({children: [{children: [{text: "a"}, {text: "bc"}]}]});
         });
         it("splits nodes", () => {
             expect(nodeReducer(
@@ -127,9 +127,9 @@ describe("Node Reducer", () => {
     describe("merge_node", () => {
         it("merges text", () => {
             expect(nodeReducer(
-                {children: [{text: "a"}, {text: "bc"}]},
-                {type: "merge_node", path: [1], position: 3, properties: {}, target: null}
-            )).toEqual({children: [{text: "abc"}]});
+                {children: [{children: [{text: "a"}, {text: "bc"}]}]},
+                {type: "merge_node", path: [0, 1], position: 3, properties: {}, target: null}
+            )).toEqual({children: [{children: [{text: "abc"}]}]});
         });
         it("merges nodes", () => {
             expect(nodeReducer(

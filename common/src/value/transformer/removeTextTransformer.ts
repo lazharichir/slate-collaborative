@@ -2,7 +2,7 @@ import {Operation, RemoveTextOperation} from "../action/Operation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function removeTextTransformer(operation: RemoveTextOperation, appliedOperation: Operation): RemoveTextOperation[] {
+export function removeTextTransformer(operation: RemoveTextOperation, appliedOperation: Operation, _: boolean): RemoveTextOperation[] {
     if (appliedOperation.type === "set_selection" || appliedOperation.type === "set_node") return [operation];
 
     if (appliedOperation.type === "insert_text") {
@@ -24,7 +24,7 @@ export function removeTextTransformer(operation: RemoveTextOperation, appliedOpe
             } else {
                 return [{...operation, offset: appliedOperation.offset, text: operation.text.substring(appliedOperation.offset - operation.offset + appliedOperation.text.length)}];
             }
-        } else if (appliedOperation.offset > operation.offset) {
+        } else {
             if (appliedOperation.offset > operation.offset + operation.text.length) {
                 return [operation];
             } else if (appliedOperation.offset + appliedOperation.text.length < operation.offset + operation.text.length) {
@@ -32,8 +32,6 @@ export function removeTextTransformer(operation: RemoveTextOperation, appliedOpe
             } else {
                 return [{...operation, text: operation.text.substring(0, appliedOperation.offset - operation.offset)}]
             }
-        } else {
-            return [operation];
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {

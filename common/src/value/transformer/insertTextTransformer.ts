@@ -2,12 +2,14 @@ import {InsertTextOperation, Operation} from "../action/Operation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function insertTextTransformer(operation: InsertTextOperation, appliedOperation: Operation): InsertTextOperation[] {
+export function insertTextTransformer(operation: InsertTextOperation, appliedOperation: Operation, tieBreaker: boolean): InsertTextOperation[] {
     if (appliedOperation.type === "set_selection" || appliedOperation.type === "set_node") return [operation];
 
     if (appliedOperation.type === "insert_text") {
         if (!Path.equals(appliedOperation.path, operation.path)) return [operation];
-        if (appliedOperation.offset <= operation.offset) {
+        if (appliedOperation.offset === operation.offset && !tieBreaker) {
+            return ([{...operation, offset: operation.offset + appliedOperation.text.length}]);
+        } else if (appliedOperation.offset < operation.offset) {
             return ([{...operation, offset: operation.offset + appliedOperation.text.length}])
         } else {
             return [operation];
@@ -23,7 +25,7 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
-            if (appliedOperation.position <= operation.offset) {
+            if (appliedOperation.position < operation.offset) {
                 return [{
                     ...operation, path: Path.next(operation.path), offset: operation.offset - appliedOperation.position
                 }];
@@ -31,8 +33,7 @@ export function insertTextTransformer(operation: InsertTextOperation, appliedOpe
                 return [operation];
             }
         } else {
-            let newPath = pathTransform(operation.path, appliedOperation);
-            if (newPath === null) return [];
+            let newPath = pathTransform(operation.path, appliedOperation)!;
             if (newPath !== operation.path) {
                 return [{...operation, path: newPath}];
             } else {

@@ -3,8 +3,8 @@ import {RecordStoreAction} from "../action/RecordStoreAction";
 import {Changeset, ChangesetId} from "common/record/action/Changeset";
 import {recordReducer} from "common/record/reducer/recordReducer";
 import {Operation} from "common/value/action/Operation";
-import changesetTransformer from "common/record/transformer/changesetTransformer";
 import {changesetInverter} from "common/record/inverter/changesetInverter";
+import {changesetsTransformer} from "common/record/transformer/changesetsTransformer";
 
 export default function recordStoreReducer(recordStore: RecordStore, action: RecordStoreAction): RecordStore {
     let {remoteRecord, unprocessedChangesets, localRecord, inProgressChangeset, outstandingChangesets, undoQueue, redoQueue} = recordStore;
@@ -29,8 +29,8 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
         localRecord = recordReducer(recordStore.localRecord, outstandingChangeset);
         outstandingChangesets = [...recordStore.outstandingChangesets, outstandingChangeset];
 
-        undoQueue = [...recordStore.undoQueue.map(undoChangeset => changesetTransformer(undoChangeset, outstandingChangeset)), changesetInverter(outstandingChangeset)];
-        redoQueue = [...recordStore.redoQueue.map(redoChangeset => changesetTransformer(redoChangeset, outstandingChangeset))];
+        undoQueue = changesetsTransformer(undoQueue, [outstandingChangeset])[0];
+        redoQueue = changesetsTransformer(redoQueue, [outstandingChangeset])[0];
         if (action.operations.some(Operation.isMutationOperation)) {
             redoQueue = [];
         }
@@ -47,15 +47,19 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
                         if (inProgressChangeset.id === appliedChangeset.id) {
                             inProgressChangeset = null;
                         } else {
-                            inProgressChangeset = changesetTransformer(inProgressChangeset, appliedChangeset)
-                            outstandingChangesets = outstandingChangesets.map(outstandingChangeset => changesetTransformer(outstandingChangeset, appliedChangeset))
-                            undoQueue = undoQueue.map(undoChangeset => changesetTransformer(undoChangeset, appliedChangeset))
-                            redoQueue = redoQueue.map(redoChangeset => changesetTransformer(redoChangeset, appliedChangeset))
+                            let [right, bottom] = changesetsTransformer([inProgressChangeset], [appliedChangeset]);
+                            inProgressChangeset = right[0];
+                            [right, bottom] = changesetsTransformer(outstandingChangesets, bottom);
+                            outstandingChangesets = right;
+
+                            undoQueue = changesetsTransformer(undoQueue, bottom)[0];
+                            redoQueue = changesetsTransformer(redoQueue, bottom)[0];
                         }
                     } else {
-                        outstandingChangesets = outstandingChangesets.map(outstandingChangeset => changesetTransformer(outstandingChangeset, appliedChangeset))
-                        undoQueue = undoQueue.map(undoChangeset => changesetTransformer(undoChangeset, appliedChangeset))
-                        redoQueue = redoQueue.map(redoChangeset => changesetTransformer(redoChangeset, appliedChangeset))
+                        let [right, bottom] = changesetsTransformer(outstandingChangesets, [appliedChangeset]);
+                        outstandingChangesets = right;
+                        undoQueue = changesetsTransformer(undoQueue, bottom)[0];
+                        redoQueue = changesetsTransformer(redoQueue, bottom)[0];
                     }
                 }
                 localRecord = remoteRecord;

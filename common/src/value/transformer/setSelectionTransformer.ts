@@ -23,7 +23,7 @@ function propertiesTransformer(range: null | Partial<Range>, appliedOperation: O
     return range;
 }
 
-export function setSelectionTransformer(operation: SetSelectionOperation, appliedOperation: Operation): SetSelectionOperation[] {
+export function setSelectionTransformer(operation: SetSelectionOperation, appliedOperation: Operation, _: boolean): SetSelectionOperation[] {
     if (appliedOperation.type === "set_selection" || appliedOperation.type === "set_node") return [operation];
     let properties = propertiesTransformer(operation.properties, appliedOperation);
     let newProperties = propertiesTransformer(operation.newProperties, appliedOperation);

@@ -64,6 +64,8 @@ export default function CollaborativeRichTextEditor(props: RichTextEditorProps) 
             }];
         })
     }, [cursors]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     let renderLeaf = useCallback((props) => Leaf(props), [cursorsDecoration]);
 
     return (

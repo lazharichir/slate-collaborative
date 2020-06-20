@@ -2,7 +2,7 @@ import {MergeNodeOperation, Operation} from "../action/Operation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function mergeNodeTransformer(operation: MergeNodeOperation, appliedOperation: Operation): Operation[] {
+export function mergeNodeTransformer(operation: MergeNodeOperation, appliedOperation: Operation, _: boolean): Operation[] {
     if (appliedOperation.type === "insert_text") {
         if (Path.equals(Path.next(appliedOperation.path), operation.path)) {
             return [{...operation, position: operation.position + appliedOperation.text.length}];
@@ -49,8 +49,7 @@ export function mergeNodeTransformer(operation: MergeNodeOperation, appliedOpera
         }
     }
 
-    let newPath = pathTransform(operation.path, appliedOperation);
-    if (newPath === null) return [];
+    let newPath = pathTransform(operation.path, appliedOperation)!;
     if (operation.path !== newPath) {
         return [{...operation, path: newPath}];
     } else {

@@ -1,14 +1,14 @@
 import {Changeset} from "../action/Changeset";
-import {operationTransformer} from "../../value/transformer/operationTransformer";
+import {operationsTransformer} from "../../value/transformer/operationsTransformer";
 
 export default function changesetTransformer(changeset: Changeset, appliedChangeset: Changeset): Changeset {
-    return ({
+    if (changeset.version !== appliedChangeset.version) {
+        throw new Error(`Cannot transform changeset ${JSON.stringify(changeset)} using ${JSON.stringify(appliedChangeset)}`)
+    }
+
+    return {
         ...changeset,
-        operations: appliedChangeset.operations.reduce(
-            (operations, appliedOperation) =>
-                operations.flatMap(operation => operationTransformer(operation, appliedOperation)),
-            changeset.operations
-        ),
+        operations: operationsTransformer(changeset.operations, appliedChangeset.operations)[0],
         version: changeset.version + 1
-    })
+    };
 }

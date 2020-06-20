@@ -2,26 +2,22 @@ import {Operation, SplitNodeOperation} from "../action/Operation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function splitNodeTransformer(operation: SplitNodeOperation, appliedOperation: Operation): SplitNodeOperation[] {
+export function splitNodeTransformer(operation: SplitNodeOperation, appliedOperation: Operation, _: boolean): SplitNodeOperation[] {
     if (appliedOperation.type === "insert_text") {
-        if (Path.equals(operation.path, appliedOperation.path)) {
-            if (appliedOperation.offset < operation.position) {
-                return [{...operation, position: operation.position + appliedOperation.text.length}];
-            } else {
-                return [operation];
-            }
-        } else return [operation];
-    } else if (appliedOperation.type === "remove_text") {
-        if (Path.equals(operation.path, appliedOperation.path)) {
-            if (appliedOperation.offset < operation.position) {
-                if (appliedOperation.offset + appliedOperation.text.length < operation.position) {
-                    return [{...operation, position: operation.position - appliedOperation.text.length}]
-                } else {
-                    return [{...operation, position: appliedOperation.offset}];
-                }
-            }
+        if (!Path.equals(operation.path, appliedOperation.path)) return [operation];
+        if (appliedOperation.offset <= operation.position) {
+            return [{...operation, position: operation.position + appliedOperation.text.length}];
         } else {
             return [operation];
+        }
+    } else if (appliedOperation.type === "remove_text") {
+        if (!Path.equals(operation.path, appliedOperation.path)) return [operation];
+        if (appliedOperation.offset < operation.position) {
+            if (appliedOperation.offset + appliedOperation.text.length < operation.position) {
+                return [{...operation, position: operation.position - appliedOperation.text.length}]
+            } else {
+                return [{...operation, position: appliedOperation.offset}];
+            }
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
