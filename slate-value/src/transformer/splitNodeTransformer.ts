@@ -2,7 +2,7 @@ import {SlateOperation, SplitNodeOperation} from "../action/SlateOperation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 
-export function splitNodeTransformer(operation: SplitNodeOperation, appliedOperation: SlateOperation, _: boolean): SplitNodeOperation[] {
+export function splitNodeTransformer(operation: SplitNodeOperation, appliedOperation: SlateOperation, tieBreaker: boolean): SplitNodeOperation[] {
     if (appliedOperation.type === "insert_text") {
         if (!Path.equals(operation.path, appliedOperation.path)) return [operation];
         if (appliedOperation.offset <= operation.position) {
@@ -21,7 +21,7 @@ export function splitNodeTransformer(operation: SplitNodeOperation, appliedOpera
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
-            if (appliedOperation.position > operation.position) {
+            if (appliedOperation.position > operation.position || (tieBreaker && appliedOperation.position === operation.position)) {
                 return [operation];
             } else {
                 return [{
@@ -29,6 +29,12 @@ export function splitNodeTransformer(operation: SplitNodeOperation, appliedOpera
                     path: Path.next(operation.path),
                     position: operation.position - appliedOperation.position
                 }]
+            }
+        } else if (Path.isParent(operation.path, appliedOperation.path)) {
+            if (appliedOperation.path[appliedOperation.path.length - 1] < operation.position) {
+                return [{...operation, position: operation.position + 1}]
+            } else {
+                return [operation];
             }
         } else {
             let newPath = pathTransform(operation.path, appliedOperation)!;

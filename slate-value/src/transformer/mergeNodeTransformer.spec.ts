@@ -1,6 +1,7 @@
 import {slateOperationTransformer} from "./slateOperationTransformer";
 import {Path} from "../Path";
 import {Point} from "../Point";
+import openRecordsIndexedDB from "../../../frontend/src/record/service/infrastructure/openRecordsIndexedDB";
 
 describe("Merge Node Transformer", () => {
     describe("set_selection applied", () => {
@@ -104,6 +105,13 @@ describe("Merge Node Transformer", () => {
             )).toEqual([
                 {type: "merge_node", path: [2], position: 5, properties: {}},
             ]);
+        });
+        it("ancestor", () => {
+            expect(slateOperationTransformer(
+                {type: "merge_node", path: [1, 1], position: 5, properties: {}},
+                {type: "remove_node", path: [1], node: {children: [{text: "abc"}, {text: "def"}]}},
+                false
+            )).toEqual([]);
         });
     });
     describe("applied set_node", () => {
@@ -256,20 +264,28 @@ describe("Merge Node Transformer", () => {
     });
     describe("split_node applied", () => {
         ([
-                ["before", {path: [0], offset: 5}, {path: [0], offset: 5}],
-                ["current", {path: [1], offset: 5}, {path: [1], offset: 5}],
-                ["after", {path: [2], offset: 5}, {path: [3], offset: 5}]
-            ] as [string, Point, Point][]).forEach(([name, input, output]) => {
-                it(name, () => {
-                    expect(slateOperationTransformer(
-                        {type: "merge_node", path: input.path, position: input.offset, properties: {}},
-                        {type: "split_node", path: [1], position: 3, properties: {}},
-                        false
-                    )).toEqual([
-                        {type: "merge_node", path: output.path, position: output.offset, properties: {}}
-                    ]);
-                });
+            ["before", {path: [0], offset: 5}, {path: [0], offset: 5}],
+            ["current", {path: [1], offset: 5}, {path: [1], offset: 5}],
+            ["after", {path: [2], offset: 5}, {path: [3], offset: 5}]
+        ] as [string, Point, Point][]).forEach(([name, input, output]) => {
+            it(name, () => {
+                expect(slateOperationTransformer(
+                    {type: "merge_node", path: input.path, position: input.offset, properties: {}},
+                    {type: "split_node", path: [1], position: 3, properties: {}},
+                    false
+                )).toEqual([
+                    {type: "merge_node", path: output.path, position: output.offset, properties: {}}
+                ]);
             });
+        });
+
+        it("at", () => {
+            expect(slateOperationTransformer(
+                {type: "merge_node", path: [0, 1], position: 5, properties: {}},
+                {type: "split_node", path: [0], position: 1, properties: {}},
+                false
+            )).toEqual([]);
+        });
     });
     describe("merge_node applied", () => {
         ([

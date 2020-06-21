@@ -44,6 +44,11 @@ function isAncestor(a: Path, b: Path): boolean {
     return Path.equals(a, b.slice(0, a.length));
 }
 
+function isParent(a: Path, b: Path): boolean {
+    if (a.length + 1 !== b.length) return false;
+    return Path.equals(a, b.slice(0, a.length));
+}
+
 export const Path = {
     compare,
     equals,
@@ -51,5 +56,6 @@ export const Path = {
     previous,
     endsBefore,
     isAncestor,
-    isSibling
+    isSibling,
+    isParent
 }

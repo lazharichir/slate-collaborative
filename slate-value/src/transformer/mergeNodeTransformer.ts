@@ -16,12 +16,14 @@ export function mergeNodeTransformer(operation: MergeNodeOperation, appliedOpera
             return [{type: "move_node", path: Path.next(operation.path), newPath: operation.path}, operation]
         }
     } else if (appliedOperation.type === "remove_node") {
-        if (Path.equals(Path.next(appliedOperation.path), operation.path) || Path.equals(appliedOperation.path, operation.path)) {
+        if (Path.equals(Path.next(appliedOperation.path), operation.path) || Path.equals(appliedOperation.path, operation.path) || Path.isAncestor(appliedOperation.path, operation.path)) {
             return [];
         }
     } else if (appliedOperation.type === "split_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {
             return [operation];
+        } else if (Path.equals([...appliedOperation.path, appliedOperation.position], operation.path)) {
+            return [];
         }
     } else if (appliedOperation.type === "merge_node") {
         if (Path.equals(appliedOperation.path, operation.path)) {

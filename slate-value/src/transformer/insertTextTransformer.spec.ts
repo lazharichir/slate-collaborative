@@ -194,6 +194,7 @@ describe("Insert Text Transformer", () => {
             ["beforeNode", [[0], 5], [[0], 5]],
             ["before", [[1], 0], [[1], 0]],
             ["at", [[1], 1], [[1], 1]],
+            ["child", [[1, 1], 5], [[2, 0], 5]],
             ["after", [[1], 2], [[2], 1]],
             ["afterNode", [[2], 5], [[3], 5]]
         ] as [string, [Path, number], [Path, number]][]).forEach(([name, [path, offset], [newPath, newOffset]]) => {

@@ -33,13 +33,13 @@ export default class RequestHandler {
             if (since === "latest") {
                 let record = await this.recordRepository.find(id);
                 await this.connectionService.send(connectionId, {type: "record_loaded", id, record});
-            } else {
-                let promises = [];
-                for await (const changeset of this.recordChangesetRepository.findSince(id, since)) {
-                    promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id, changeset}));
-                }
-                await Promise.all(promises);
+                since = record.version;
             }
+            let promises = [];
+            for await (const changeset of this.recordChangesetRepository.findSince(id, since)) {
+                promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id, changeset}));
+            }
+            await Promise.all(promises);
         } else if (request.type === "unsubscribe") {
             await this.recordConnectionRepository.removeConnection(request.id, connectionId);
         } else if (request.type === "apply_changeset") {

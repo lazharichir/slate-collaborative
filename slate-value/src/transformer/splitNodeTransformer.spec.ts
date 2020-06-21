@@ -169,6 +169,69 @@ describe("Split Node Transformer", () => {
                 ]);
             });
         });
+        it("child, before split", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [5, 0], position: 3, properties: {}},
+                false
+            )).toEqual([
+                {type: "split_node", path: [5], position: 6, properties: {}}
+            ]);
+        });
+        it("child, after split", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [5, 6], position: 3, properties: {}},
+                false
+            )).toEqual([
+                {type: "split_node", path: [5], position: 5, properties: {}}
+            ]);
+        });
+        it("child, at split", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [5, 5], position: 5, properties: {}},
+                false
+            )).toEqual([
+                {type: "split_node", path: [5], position: 5, properties: {}}
+            ]);
+        });
+        it("child, at split, tiebreaker", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [5, 5], position: 5, properties: {}},
+                true
+            )).toEqual([
+                {type: "split_node", path: [5], position: 5, properties: {}}
+            ]);
+        });
+        it("beforeNodeChild", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [0, 0], position: 5, properties: {}},
+                false
+            )).toEqual([
+                {type: "split_node", path: [5], position: 5, properties: {}}
+            ]);
+        });
+        it("afterNodeChild", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5, 0], position: 10, properties: {}},
+                {type: "split_node", path: [0], position: 5, properties: {}},
+                false
+            )).toEqual([
+                {type: "split_node", path: [6, 0], position: 10, properties: {}}
+            ]);
+        });
+        it("at, tiebreaker", () => {
+            expect(slateOperationTransformer(
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                {type: "split_node", path: [5], position: 5, properties: {}},
+                true
+            )).toEqual([
+                {type: "split_node", path: [5], position: 5, properties: {}}
+            ]);
+        });
     });
     describe("merge_node applied", () => {
         ([

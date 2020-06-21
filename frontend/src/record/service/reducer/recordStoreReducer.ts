@@ -63,6 +63,21 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
                         undoQueue = slateChangesetsTransformer(undoQueue, bottom, false)[0];
                         redoQueue = slateChangesetsTransformer(redoQueue, bottom, false)[0];
                     }
+
+                    // Ensure that the changesets can still be applied
+                    localRecord = remoteRecord;
+                    if (inProgressChangeset !== null) {
+                        localRecord = slateRecordReducer(localRecord, inProgressChangeset);
+                    }
+                    if (outstandingChangesets.length > 0) {
+                        localRecord = outstandingChangesets.reduce(slateRecordReducer, localRecord);
+                    }
+                    if (undoQueue.length > 0) {
+                        undoQueue.reduce(slateRecordReducer, localRecord);
+                    }
+                    if (redoQueue.length > 0) {
+                        redoQueue.reduce(slateRecordReducer, localRecord);
+                    }
                 }
                 localRecord = remoteRecord;
                 if (inProgressChangeset !== null) {
