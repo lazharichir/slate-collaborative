@@ -1,6 +1,5 @@
 import {Path} from "../Path";
 import {Node} from "../Node";
-import {Selection} from "../Selection";
 import {Range} from "../Range";
 
 export type InsertNodeOperation = {

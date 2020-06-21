@@ -1,6 +1,5 @@
 import {InsertNodeOperation, Operation, RemoveNodeOperation, SetSelectionOperation} from "../action/Operation";
 import {Node} from "../Node";
-import {Path} from "../Path";
 import {pathTransform} from "../transformer/pathTransformer";
 import {getNode} from "./getNode";
 

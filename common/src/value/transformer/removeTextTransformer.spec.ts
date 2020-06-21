@@ -3,7 +3,6 @@ import {SetSelectionOperation} from "../action/Operation";
 import {Range} from "../Range";
 import {Path} from "../Path";
 import {Point} from "../Point";
-import {Node} from "../Node";
 
 
 function properties(anchor: Point | null, focus: Point | null): Range | Partial<Range> | null {

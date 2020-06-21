@@ -1,9 +1,6 @@
 import {operationTransformer} from "./operationTransformer";
-import {SetSelectionOperation} from "../action/Operation";
-import {Range} from "../Range";
 import {Path} from "../Path";
 import {Point} from "../Point";
-import {Node} from "../Node";
 
 describe("Split Node Transformer", () => {
     describe("set_selection applied", () => {

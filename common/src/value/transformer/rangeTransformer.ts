@@ -1,9 +1,8 @@
 import {Range} from "../Range";
-import {Operation, SetSelectionOperation} from "../action/Operation";
+import {Operation} from "../action/Operation";
 import {Path} from "../Path";
 import {Point} from "../Point";
 import {pointTransformer} from "./pointTransformer";
-
 
 
 export function rangeTransformer(range: Range, appliedOperation: Operation): Range | null {
