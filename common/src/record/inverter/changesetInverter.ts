@@ -1,9 +1,9 @@
-import {Changeset} from "../action/Changeset";
-import {operationInverter} from "../../value/inverter/operationInverter";
+import {Changeset} from "..";
+import {slateOperationInverter} from "slate-value";
 
 export function changesetInverter(changeset: Changeset): Changeset {
     return ({
         ...changeset,
-        operations: [...changeset.operations].reverse().map(operationInverter)
+        operations: [...changeset.operations].reverse().map(slateOperationInverter)
     });
 }

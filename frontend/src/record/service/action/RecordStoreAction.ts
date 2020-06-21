@@ -1,7 +1,7 @@
-import {Operation} from "common/value/action/Operation";
 import {Changeset} from "common/record/action/Changeset";
 import {Record} from "common/record/Record";
 import {ClientId} from "common/record/ClientId";
+import {SlateOperation} from "slate-value";
 
 export type LoadRemoteRecord = {
     type: "load_remote_record";
@@ -16,7 +16,7 @@ export type ApplyRemoteChangeset = {
 export type ApplyLocalOperations = {
     type: "apply_local_operations";
     clientId: ClientId;
-    operations: Operation[];
+    operations: SlateOperation[];
 };
 
 export type SendChangeset = {

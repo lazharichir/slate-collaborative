@@ -17,7 +17,7 @@ export const RecordStore = {
             metadata: {type: "RECORD", version: 1},
             version: 0,
             value: {
-                metadata: {type: "VALUE", version: 1},
+                metadata: {type: "SLATE_VALUE", version: 1},
                 children: []
             },
             cursors: {}
@@ -27,7 +27,7 @@ export const RecordStore = {
             metadata: {type: "RECORD", version: 1},
             version: 0,
             value: {
-                metadata: {type: "VALUE", version: 1},
+                metadata: {type: "SLATE_VALUE", version: 1},
                 children: []
             },
             cursors: {}

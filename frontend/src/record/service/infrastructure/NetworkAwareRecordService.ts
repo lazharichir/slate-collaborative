@@ -6,12 +6,12 @@ import IndexedDBRecordStoreStorage from "./IndexedDBRecordStoreStorage";
 import RecordWebsocket from "./RecordWebsocket";
 import {Record, RecordId} from "common/record/Record";
 import {Subscription} from "../../../common/Subscription";
-import {Operation} from "common/value/action/Operation";
 import recordStoreReducer from "../reducer/recordStoreReducer";
 import {Changeset, ChangesetId} from "common/record/action/Changeset";
 import {ClientId} from "common/record/ClientId";
 import {changesetOptimizer} from "common/record/optimizer/changesetOptimizer";
 import {webSocketUrl} from "../../../config";
+import {SlateOperation} from "slate-value";
 
 export default class NetworkAwareRecordService implements RecordService {
     private readonly recordStores: {[key: string]: RecordStore} = {};
@@ -51,7 +51,7 @@ export default class NetworkAwareRecordService implements RecordService {
         };
     }
 
-    async applyOperations(id: RecordId, clientId: ClientId, operations: Operation[]) {
+    async applyOperations(id: RecordId, clientId: ClientId, operations: SlateOperation[]) {
         if (this.recordStores[id] === undefined) {
             this.recordStores[id] = await this.recordStoreStorage.find(id)
         }
@@ -105,7 +105,7 @@ export default class NetworkAwareRecordService implements RecordService {
         let {remoteRecord, inProgressChangeset, outstandingChangesets} = this.recordStores[id];
 
         if (inProgressChangeset === null && outstandingChangesets.length > 0) {
-            let outstandingOperations = outstandingChangesets.reduce((operations: Operation[], changeset: Changeset): Operation[] => {
+            let outstandingOperations = outstandingChangesets.reduce((operations: SlateOperation[], changeset: Changeset): SlateOperation[] => {
                 return [...operations, ...changeset.operations];
             }, []);
 

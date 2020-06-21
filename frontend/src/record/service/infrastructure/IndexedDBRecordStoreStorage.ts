@@ -1,18 +1,16 @@
 import openRecordsIndexedDB from "./openRecordsIndexedDB";
 import RecordStoreStorage from "../domain/RecordStoreStorage";
-import {VersionedRecordVersion_1} from "common/record/upcaster/VersionedRecord";
-import {VersionedValue_1} from "common/value/upcaster/VersionedValue";
-import {VersionedChangeset_1} from "common/record/upcaster/VersionedChangeset";
+import {VersionedRecordVersion} from "common/record/upcaster/VersionedRecord";
+import {VersionedChangeset} from "common/record/upcaster/VersionedChangeset";
 import {Changeset} from "common/record/action/Changeset";
 import {RecordStore} from "../domain/RecordStore";
-import {valueUpcaster} from "common/value/upcaster/valueUpcaster";
 import {RecordId, RecordVersion} from "common/record/Record";
-import {Value} from "common/value/Value";
+import {SlateValue, slateValueUpcaster, VersionedSlateValue} from "slate-value";
 
 type VersionedIndexedDBRecord_1 = {
     metadata: {type: "RECORD"; version: 1; };
-    version: VersionedRecordVersion_1;
-    value: VersionedValue_1;
+    version: VersionedRecordVersion;
+    value: VersionedSlateValue;
 };
 
 type VersionedIndexedDBRecord =
@@ -21,10 +19,10 @@ type VersionedIndexedDBRecord =
 
 type VersionedIndexedDBRecordStore_1 = {
     remoteRecord: VersionedIndexedDBRecord_1,
-    unprocessedChangesets: VersionedChangeset_1[],
+    unprocessedChangesets: VersionedChangeset[],
     localRecord: VersionedIndexedDBRecord_1,
-    inProgressChangeset: null | VersionedChangeset_1,
-    outstandingChangesets: VersionedChangeset_1[],
+    inProgressChangeset: null | VersionedChangeset,
+    outstandingChangesets: VersionedChangeset[],
 };
 
 type VersionedIndexedDBRecordStore =
@@ -34,7 +32,7 @@ type VersionedIndexedDBRecordStore =
 type IndexedDBRecord = {
     metadata: {type: "RECORD"; version: 1; };
     version: RecordVersion;
-    value: Value;
+    value: SlateValue;
 }
 
 type IndexedDBRecordStore = {
@@ -74,14 +72,14 @@ export default class IndexedDBRecordStoreStorage implements RecordStoreStorage {
                 unprocessedChangesets: indexedDBRecordStore.unprocessedChangesets,
                 localRecord: {
                     metadata: {type: "RECORD", version: 1},
-                    value: valueUpcaster(indexedDBRecordStore.localRecord.value),
+                    value: slateValueUpcaster(indexedDBRecordStore.localRecord.value),
                     version: indexedDBRecordStore.localRecord.version,
                     cursors: {}
                 },
                 remoteRecord: {
                     metadata: {type: "RECORD", version: 1},
                     version: indexedDBRecordStore.remoteRecord.version,
-                    value: valueUpcaster(indexedDBRecordStore.remoteRecord.value),
+                    value: slateValueUpcaster(indexedDBRecordStore.remoteRecord.value),
                     cursors: {}
                 },
                 undoQueue: [],

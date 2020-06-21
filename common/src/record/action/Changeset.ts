@@ -1,12 +1,12 @@
-import {Operation} from "../../value/action/Operation";
 import {RecordVersion} from "../Record";
 import {randomUUID} from "../../util/randomUUID";
 import {ClientId} from "../ClientId";
+import {SlateOperation} from "slate-value";
 
 export type ChangesetId = string;
 
 export const ChangesetId = {
-    generate: randomUUID as () => ChangesetId
+    generate: randomUUID as () => ChangesetId,
 }
 
 export type Changeset = {
@@ -14,5 +14,13 @@ export type Changeset = {
     id: ChangesetId;
     clientId: ClientId;
     version: RecordVersion;
-    operations: Operation[];
+    operations: SlateOperation[];
+};
+
+function isMutationChangeset(changeset: Changeset){
+    return changeset.operations.some(SlateOperation.isMutationOperation);
+}
+
+export const Changeset = {
+    isMutationChangeset
 };

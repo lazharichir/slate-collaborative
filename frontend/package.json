@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "common": "file:../common/build",
+    "slate-value": "file:../slate-value/build",
     "emotion": "^10.0.27",
     "material-icons": "^0.3.1",
     "react": "^16.13.1",

@@ -1,5 +1,5 @@
-import {Changeset} from "../action/Changeset";
-import {operationsTransformer} from "../../value/transformer/operationsTransformer";
+import {Changeset} from "..";
+import {slateOperationsTransformer} from "slate-value";
 
 export default function changesetTransformer(changeset: Changeset, appliedChangeset: Changeset, winBreaker: boolean): Changeset {
     if (changeset.version !== appliedChangeset.version) {
@@ -8,7 +8,7 @@ export default function changesetTransformer(changeset: Changeset, appliedChange
 
     return {
         ...changeset,
-        operations: operationsTransformer(changeset.operations, appliedChangeset.operations, winBreaker)[0],
+        operations: slateOperationsTransformer(changeset.operations, appliedChangeset.operations, winBreaker)[0],
         version: changeset.version + 1
     };
 }

@@ -4,7 +4,6 @@ import {DynamoDB} from "aws-sdk";
 import {recordTableName} from "../config";
 import {recordUpcaster} from "common/record/upcaster/recordUpcaster";
 import {VersionedRecord} from "common/record/upcaster/VersionedRecord";
-import {Value} from "common/value/Value";
 
 export default class DynamoDBRecordRepository implements RecordRepository {
     private dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
@@ -19,12 +18,7 @@ export default class DynamoDBRecordRepository implements RecordRepository {
             if (response.Item) {
                 return recordUpcaster(response.Item["record"] as VersionedRecord);
             } else {
-                return ({
-                    metadata: {type: "RECORD", version: 1},
-                    version: 0,
-                    value: Value.DEFAULT,
-                    cursors: {}
-                });
+                return (Record.DEFAULT);
             }
         });
     }

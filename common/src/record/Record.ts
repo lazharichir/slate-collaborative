@@ -1,5 +1,4 @@
-import {Value} from "../value/Value";
-import {Selection} from "../value/Selection";
+import {SlateSelection, SlateValue} from "slate-value";
 
 export type RecordId = string;
 export type RecordVersion = number;
@@ -10,15 +9,15 @@ export type Record = {
         version: 1;
     };
     version: RecordVersion;
-    value: Value;
-    cursors: {[key: string]: Selection};
+    value: SlateValue;
+    cursors: {[key: string]: SlateSelection};
 };
 
 export const Record = {
     DEFAULT: {
         metadata: {type: "RECORD", version: 1},
         version: 0,
-        value: Value.DEFAULT,
+        value: SlateValue.DEFAULT,
         cursors: {}
     } as Record
 };

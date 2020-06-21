@@ -1,5 +1,5 @@
 import {Record, RecordId} from "../record/Record";
-import {Changeset} from "../record/action/Changeset";
+import {Changeset} from "../record";
 
 type RECORD_LOADED = {
     type: "record_loaded";

@@ -1,9 +1,9 @@
-import {Changeset} from "../action/Changeset";
-import {operationsOptimizer} from "../../value/optimizer/operationsOptimizer";
+import {Changeset} from "..";
+import {slateOperationsOptimizer} from "slate-value";
 
 export function changesetOptimizer(changeset: Changeset): Changeset {
     return ({
         ...changeset,
-        operations: operationsOptimizer(changeset.operations)
+        operations: slateOperationsOptimizer(changeset.operations)
     });
 }

@@ -1,4 +1,4 @@
-import {Changeset} from "../action/Changeset";
+import {Changeset} from "..";
 import changesetTransformer from "./changesetTransformer";
 
 export function changesetsTransformer(leftChangesets: Changeset[], topChangesets: Changeset[]): [Changeset[], Changeset[]] {

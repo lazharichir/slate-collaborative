@@ -6,7 +6,7 @@ import {createEditor, Editor, Path, Point, Range, Text, Transforms} from 'slate'
 import {RecordId} from "common/record/Record";
 import useRecord from "../useRecord";
 import withUndoRedo from "./withUndoRedo";
-import {Operation} from "common/value/action/Operation";
+import {SlateOperation} from "slate-value";
 import {ClientId} from "common/record/ClientId";
 import Caret from "./Caret";
 import Button from "./Button";
@@ -42,7 +42,7 @@ type RichTextEditorProps = {
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
     let {value, selection, cursors, version, apply, undo, redo} = useRecord(props.recordId, props.clientId);
     const editor = useMemo(() => withUndoRedo(withReact(createEditor()), undo, redo), [undo, redo])
-    let changeHandler = useCallback(() => apply(editor.operations as Operation[]), [editor, apply]);
+    let changeHandler = useCallback(() => apply(editor.operations as SlateOperation[]), [editor, apply]);
     const cursorsDecoration = useCallback(([node, path]): Range[] => {
         if (!Text.isText(node)) return [];
         return Object.keys(cursors).flatMap((clientId: ClientId): Range[] => {

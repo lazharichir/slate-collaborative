@@ -2,7 +2,9 @@
   "name": "common",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "slate-value": "file:../slate-value/build"
+  },
   "devDependencies": {
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.44",
@@ -11,8 +13,7 @@
     "typescript": "^3.7.5"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "postbuild": "copy \"src\\package.json\" \"build\\\""
+    "build": "tsc && copy \"public\\package.json\" \"build\\\" && cd \"build\\\" && npm install --production",
+    "test": "jest"
   }
 }

@@ -2,7 +2,6 @@ import {RecordStore} from "../domain/RecordStore";
 import {RecordStoreAction} from "../action/RecordStoreAction";
 import {Changeset, ChangesetId} from "common/record/action/Changeset";
 import {recordReducer} from "common/record/reducer/recordReducer";
-import {Operation} from "common/value/action/Operation";
 import {changesetInverter} from "common/record/inverter/changesetInverter";
 import {changesetsTransformer} from "common/record/transformer/changesetsTransformer";
 
@@ -34,7 +33,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
         outstandingChangesets = [...recordStore.outstandingChangesets, outstandingChangeset];
 
         undoQueue = [changesetInverter(outstandingChangeset), ...undoQueue.map(incrementVersion)].map(incrementVersion);
-        if (action.operations.some(Operation.isMutationOperation)) {
+        if (Changeset.isMutationChangeset(outstandingChangeset)) {
             redoQueue = [];
         } else {
             redoQueue = redoQueue.map(incrementVersion);
@@ -111,7 +110,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
             localRecord = recordReducer(localRecord, undoChangeset)
 
             // keep undoing until a mutation is detected
-            if (undoChangeset.operations.some(Operation.isMutationOperation)) break;
+            if (Changeset.isMutationChangeset(undoChangeset)) break;
         }
     } else if (action.type === "apply_redo") {
         while (redoQueue.length > 0) {
@@ -128,7 +127,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
             localRecord = recordReducer(localRecord, redoChangeset);
 
             // keep redoing until a mutation is detected
-            if (redoChangeset.operations.some(Operation.isMutationOperation)) break;
+            if (Changeset.isMutationChangeset(redoChangeset)) break;
         }
     }
 

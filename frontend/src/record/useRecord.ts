@@ -1,18 +1,16 @@
 import {RecordId, Record} from "common/record/Record";
-import {Operation} from "common/value/action/Operation";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
-import {Selection} from "common/value/Selection";
-import {Value} from "common/value/Value";
 import {RecordVersion} from "common/record/Record";
 import RecordServiceContext from "./service/context/RecordServiceContext";
 import {ClientId} from "common/record/ClientId";
+import {SlateOperation, SlateSelection, SlateValue} from "slate-value";
 
 type RecordContext = {
-    value: Value;
-    selection: Selection;
-    cursors: {[key: string]: Selection};
+    value: SlateValue;
+    selection: SlateSelection;
+    cursors: {[key: string]: SlateSelection};
     version: RecordVersion;
-    apply: (operations: Operation[]) => void;
+    apply: (operations: SlateOperation[]) => void;
     undo: () => void;
     redo: () => void;
 };
@@ -33,7 +31,7 @@ export default function useRecord(id: RecordId, clientId: ClientId): RecordConte
         };
     }, [recordService, setRecord, id]);
 
-    let apply = useCallback((operations: Operation[]) => recordService.applyOperations(id, clientId, operations), [recordService, id, clientId]);
+    let apply = useCallback((operations: SlateOperation[]) => recordService.applyOperations(id, clientId, operations), [recordService, id, clientId]);
     let undo = useCallback(() => recordService.applyUndo(id, clientId), [recordService, id, clientId]);
     let redo = useCallback(() => recordService.applyRedo(id, clientId), [recordService, id, clientId]);
 

@@ -1,5 +1,5 @@
 import {RecordId, RecordVersion} from "../record/Record";
-import {Changeset} from "../record/action/Changeset";
+import {Changeset} from "../record";
 
 type SUBSCRIBE_TO_RECORD = {
     type: "subscribe";

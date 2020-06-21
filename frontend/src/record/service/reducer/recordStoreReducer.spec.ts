@@ -10,7 +10,7 @@ describe("Record Store Reducer", () => {
                 version: 1,
                 cursors: {},
                 value: {
-                    metadata: {type: "VALUE", version: 1},
+                    metadata: {type: "SLATE_VALUE", version: 1},
                     children: []
                 }
             }
@@ -20,7 +20,7 @@ describe("Record Store Reducer", () => {
                 version: 1,
                 cursors: {},
                 value: {
-                    metadata: {type: "VALUE", version: 1},
+                    metadata: {type: "SLATE_VALUE", version: 1},
                     children: []
                 }
             },
@@ -30,7 +30,7 @@ describe("Record Store Reducer", () => {
                 version: 1,
                 cursors: {},
                 value: {
-                    metadata: {type: "VALUE", version: 1},
+                    metadata: {type: "SLATE_VALUE", version: 1},
                     children: []
                 }
             },
