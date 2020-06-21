@@ -1,16 +1,17 @@
-import {Record, RecordId} from "../record/Record";
-import {Changeset} from "../record";
+import {Record, RecordId} from "record";
+import {Changeset} from "record";
+import {SlateOperation, SlateSelection, SlateValue} from "slate-value";
 
 type RECORD_LOADED = {
     type: "record_loaded";
     id: RecordId;
-    record: Record;
+    record: Record<SlateValue, SlateSelection>;
 };
 
 type CHANGESET_APPLIED = {
     type: "changeset_applied";
     id: RecordId;
-    changeset: Changeset;
+    changeset: Changeset<SlateOperation>;
 };
 
 type KEEP_ALIVE = {

@@ -13,3 +13,4 @@ export {VersionedSlateValue} from "./upcaster/VersionedSlateValue";
 export {SlateSelection} from "./SlateSelection";
 export {slateCursorsReducer} from "./reducer/slateCursorsReducer";
 export {VersionedSlateSelection} from "./upcaster/VersionedSlateValue";
+export {slateSelectionUpcaster} from "./upcaster/slateSelectionUpcaster";

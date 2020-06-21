@@ -1,4 +1,4 @@
-import {RecordId} from "common/record/Record";
+import {RecordId} from "record";
 import {RecordStore} from "./RecordStore";
 
 export default interface RecordStoreStorage {

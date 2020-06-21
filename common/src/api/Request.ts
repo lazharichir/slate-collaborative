@@ -1,21 +1,21 @@
-import {RecordId, RecordVersion} from "../record/Record";
-import {Changeset} from "../record";
+import {VersionedChangeset, VersionedRecordId, VersionedRecordVersion} from "record";
+import {VersionedSlateOperation} from "slate-value";
 
 type SUBSCRIBE_TO_RECORD = {
     type: "subscribe";
-    id: RecordId;
-    since: "latest" | RecordVersion
+    id: VersionedRecordId;
+    since: "latest" | VersionedRecordVersion
 };
 
 type UNSUBSCRIBE_FROM_RECORD = {
     type: "unsubscribe";
-    id: RecordId;
+    id: VersionedRecordId;
 };
 
 type APPLY_CHANGESET = {
     type: "apply_changeset";
-    id: RecordId;
-    changeset: Changeset;
+    id: VersionedRecordId;
+    changeset: VersionedChangeset<VersionedSlateOperation>;
 };
 
 type KEEP_ALIVE = {

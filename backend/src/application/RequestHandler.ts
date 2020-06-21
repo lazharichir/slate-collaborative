@@ -1,12 +1,12 @@
 import {ConnectionId} from "../domain/ConnectionId";
-import {Request} from "common/api/Request";
+import {Request} from "common";
 import RecordConnectionRepository from "../domain/RecordConnectionRepository";
 import RecordRepository from "../domain/RecordRepository";
 import ConnectionService from "../domain/ConnectionService";
 import ChangesetRepository from "../domain/ChangesetRepository";
 import RecordService from "../domain/RecordService";
 import RecordConnectionService from "../domain/RecordConnectionService";
-import {changesetUpcaster} from "common/record/upcaster/changesetUpcaster";
+import {slateChangesetUpcaster} from "common";
 
 export default class RequestHandler {
 
@@ -44,7 +44,7 @@ export default class RequestHandler {
             await this.recordConnectionRepository.removeConnection(request.id, connectionId);
         } else if (request.type === "apply_changeset") {
             let {id, changeset} = request;
-            let appliedChangeset = await this.recordService.applyChangeset(id, changesetUpcaster(changeset));
+            let appliedChangeset = await this.recordService.applyChangeset(id, slateChangesetUpcaster(changeset));
             if (appliedChangeset !== null) {
                 changeset = appliedChangeset;
                 await this.connectionService.send(connectionId, {

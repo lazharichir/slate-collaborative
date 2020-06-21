@@ -1,6 +1,11 @@
 # Collaborative Slate Editor
 
-# Deploy Backend
+# Build Record
+
+```
+cd record
+npm run build
+```
 
 # Build Slate-Value
 

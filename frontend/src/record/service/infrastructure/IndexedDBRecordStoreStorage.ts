@@ -1,11 +1,9 @@
 import openRecordsIndexedDB from "./openRecordsIndexedDB";
 import RecordStoreStorage from "../domain/RecordStoreStorage";
-import {VersionedRecordVersion} from "common/record/upcaster/VersionedRecord";
-import {VersionedChangeset} from "common/record/upcaster/VersionedChangeset";
-import {Changeset} from "common/record/action/Changeset";
 import {RecordStore} from "../domain/RecordStore";
-import {RecordId, RecordVersion} from "common/record/Record";
 import {SlateValue, slateValueUpcaster, VersionedSlateValue} from "slate-value";
+import {RecordId, RecordVersion, VersionedRecordVersion} from "record";
+import {SlateChangeset, VersionedSlateChangeset} from "common";
 
 type VersionedIndexedDBRecord_1 = {
     metadata: {type: "RECORD"; version: 1; };
@@ -19,10 +17,10 @@ type VersionedIndexedDBRecord =
 
 type VersionedIndexedDBRecordStore_1 = {
     remoteRecord: VersionedIndexedDBRecord_1,
-    unprocessedChangesets: VersionedChangeset[],
+    unprocessedChangesets: VersionedSlateChangeset[],
     localRecord: VersionedIndexedDBRecord_1,
-    inProgressChangeset: null | VersionedChangeset,
-    outstandingChangesets: VersionedChangeset[],
+    inProgressChangeset: null | VersionedSlateChangeset,
+    outstandingChangesets: VersionedSlateChangeset[],
 };
 
 type VersionedIndexedDBRecordStore =
@@ -37,10 +35,10 @@ type IndexedDBRecord = {
 
 type IndexedDBRecordStore = {
     remoteRecord: IndexedDBRecord,
-    unprocessedChangesets: Changeset[],
+    unprocessedChangesets: SlateChangeset[],
     localRecord: IndexedDBRecord,
-    inProgressChangeset: null | Changeset,
-    outstandingChangesets: Changeset[]
+    inProgressChangeset: null | SlateChangeset,
+    outstandingChangesets: SlateChangeset[]
 }
 
 function indexedDBRecordStoreUpcaster(indexedDBRecordStore: VersionedIndexedDBRecordStore): IndexedDBRecordStore {

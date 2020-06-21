@@ -3,7 +3,7 @@ import {ConnectionId} from "../domain/ConnectionId";
 import {DynamoDB} from "aws-sdk";
 import {DocumentClient} from "aws-sdk/lib/dynamodb/document_client";
 import {recordConnectionTableName} from "../config";
-import {RecordId} from "common/record/Record";
+import {RecordId} from "record";
 import QueryOutput = DocumentClient.QueryOutput;
 
 export default class DynamoDBRecordConnectionRepository implements RecordConnectionRepository {

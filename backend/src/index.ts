@@ -2,7 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda/trigger/ap
 import {Context} from "aws-lambda/handler";
 import DynamoDBRecordConnectionRepository from "./infrastructure/DynamoDBRecordConnectionRepository";
 import RecordConnectionRepository from "./domain/RecordConnectionRepository";
-import {Request} from "common/api/Request";
+import {Request} from "common";
 import ConnectionService from "./domain/ConnectionService";
 import ApiGatewayConnectionService from "./infrastructure/ApiGatewayConnectionService";
 import RecordRepository from "./domain/RecordRepository";

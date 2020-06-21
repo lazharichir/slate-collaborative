@@ -1,9 +1,7 @@
 import RecordRepository from "./RecordRepository";
 import ChangesetRepository from "./ChangesetRepository";
-import {Changeset} from "common/record/action/Changeset";
-import {RecordId} from "common/record/Record";
-import changesetTransformer from "common/record/transformer/changesetTransformer";
-import {recordReducer} from "common/record/reducer/recordReducer";
+import {RecordId} from "record";
+import {SlateChangeset, slateChangesetsTransformer, slateRecordReducer} from "common";
 
 export default class RecordService {
     private recordRepository: RecordRepository
@@ -14,7 +12,7 @@ export default class RecordService {
         this.changesetRepository = changesetRepository;
     }
 
-    async applyChangeset(id: RecordId, changeset: Changeset): Promise<Changeset | null> {
+    async applyChangeset(id: RecordId, changeset: SlateChangeset): Promise<SlateChangeset | null> {
         let record = await this.recordRepository.find(id);
         if (record.version + 1 !== changeset.version) {
             for await (const appliedChangeset of this.changesetRepository.findSince(id, changeset.version)) {
@@ -22,11 +20,11 @@ export default class RecordService {
                     return null; // already applied
                 }
 
-                changeset = changesetTransformer(changeset, appliedChangeset, false);
+                changeset = slateChangesetsTransformer([changeset], [appliedChangeset], false)[0][0];
             }
         }
 
-        record = recordReducer(record, changeset);
+        record = slateRecordReducer(record, changeset);
         await this.changesetRepository.save(id, changeset);
         await this.recordRepository.save(id, record);
 

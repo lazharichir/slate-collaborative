@@ -1,14 +1,13 @@
-import {Record} from "common/record/Record";
-import {Changeset} from "common/record/action/Changeset";
+import {SlateChangeset, SlateRecord} from "common";
 
 export type RecordStore = {
-    remoteRecord: Record,
-    unprocessedChangesets: Changeset[],
-    localRecord: Record,
-    inProgressChangeset: null | Changeset,
-    outstandingChangesets: Changeset[],
-    undoQueue: Changeset[],
-    redoQueue: Changeset[]
+    remoteRecord: SlateRecord,
+    unprocessedChangesets: SlateChangeset[],
+    localRecord: SlateRecord,
+    inProgressChangeset: null | SlateChangeset,
+    outstandingChangesets: SlateChangeset[],
+    undoQueue: SlateChangeset[],
+    redoQueue: SlateChangeset[]
 };
 
 export const RecordStore = {

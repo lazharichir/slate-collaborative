@@ -3,15 +3,14 @@ import isHotkey from 'is-hotkey'
 import {Editable, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact} from 'slate-react'
 import {createEditor, Editor, Path, Point, Range, Text, Transforms} from 'slate'
 
-import {RecordId} from "common/record/Record";
 import useRecord from "../useRecord";
 import withUndoRedo from "./withUndoRedo";
 import {SlateOperation} from "slate-value";
-import {ClientId} from "common/record/ClientId";
 import Caret from "./Caret";
 import Button from "./Button";
 import Icon from "./Icon";
 import Toolbar from "./Toolbar";
+import {ClientId, RecordId} from "record";
 
 const HOTKEYS: {[key: string]: Format} = {
     'mod+b': 'bold',

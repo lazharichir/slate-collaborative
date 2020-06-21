@@ -1,14 +1,13 @@
 import RecordRepository from "../domain/RecordRepository";
-import {Record, RecordId} from "common/record/Record";
+import {RecordId} from "record";
 import {DynamoDB} from "aws-sdk";
 import {recordTableName} from "../config";
-import {recordUpcaster} from "common/record/upcaster/recordUpcaster";
-import {VersionedRecord} from "common/record/upcaster/VersionedRecord";
+import {SlateRecord, slateRecordUpcaster, VersionedSlateRecord} from "common";
 
 export default class DynamoDBRecordRepository implements RecordRepository {
     private dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
 
-    find(id: RecordId): Promise<Record> {
+    find(id: RecordId): Promise<SlateRecord> {
         return this.dynamoDbClient.get({
             TableName: recordTableName,
             Key: { id },
@@ -16,14 +15,14 @@ export default class DynamoDBRecordRepository implements RecordRepository {
             ExpressionAttributeNames: {"#record": "record"}
         }).promise().then(response => {
             if (response.Item) {
-                return recordUpcaster(response.Item["record"] as VersionedRecord);
+                return slateRecordUpcaster(response.Item["record"] as VersionedSlateRecord);
             } else {
-                return (Record.DEFAULT);
+                return (SlateRecord.DEFAULT);
             }
         });
     }
 
-    save(id: RecordId, record: Record): Promise<void> {
+    save(id: RecordId, record: SlateRecord): Promise<void> {
         return this.dynamoDbClient.put({
             TableName: recordTableName,
             Item: {id, record}

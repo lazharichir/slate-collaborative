@@ -1,4 +1,8 @@
-import {VersionedSlateSelection, VersionedSlateValue} from "slate-value";
+type VersionedRecordId_1 = string;
+
+export type VersionedRecordId =
+    | VersionedRecordId_1
+    ;
 
 type VersionedClientId_1 = string;
 
@@ -12,16 +16,16 @@ export type VersionedRecordVersion =
     | VersionedRecordVersion_1
     ;
 
-type VersionedRecord_1 = {
+type VersionedRecord_1<VV, VS> = {
     metadata: {
         type: "RECORD";
         version: 1;
     };
     version: VersionedRecordVersion;
-    value: VersionedSlateValue;
-    cursors: {[key: string]: VersionedSlateSelection};
+    value: VV;
+    cursors: {[key: string]: VS};
 };
 
-export type VersionedRecord =
-    | VersionedRecord_1
+export type VersionedRecord<VV, VS> =
+    | VersionedRecord_1<VV, VS>
     ;

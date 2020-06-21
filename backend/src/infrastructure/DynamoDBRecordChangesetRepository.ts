@@ -1,17 +1,15 @@
 import ChangesetRepository from "../domain/ChangesetRepository";
 import {DynamoDB} from "aws-sdk";
 import {DocumentClient} from "aws-sdk/lib/dynamodb/document_client";
-import QueryInput = DocumentClient.QueryInput;
-import {RecordId, RecordVersion} from "common/record/Record";
-import {Changeset} from "common/record/action/Changeset";
+import {RecordId, RecordVersion} from "record";
 import {recordChangesetTableName} from "../config";
-import {changesetUpcaster} from "common/record/upcaster/changesetUpcaster";
-import {VersionedChangeset} from "common/record/upcaster/VersionedChangeset";
+import {SlateChangeset, slateChangesetUpcaster, VersionedSlateChangeset} from "common";
+import QueryInput = DocumentClient.QueryInput;
 
 export default class DynamoDBRecordChangesetRepository implements ChangesetRepository {
     private dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
 
-    async *findSince(id: RecordId, version: RecordVersion): AsyncIterable<Changeset> {
+    async *findSince(id: RecordId, version: RecordVersion): AsyncIterable<SlateChangeset> {
         let queryParams: QueryInput = {
             TableName: recordChangesetTableName,
             ConsistentRead: true,
@@ -32,14 +30,14 @@ export default class DynamoDBRecordChangesetRepository implements ChangesetRepos
 
             if (response.Items) {
                 for (const item of response.Items) {
-                    yield changesetUpcaster(item["changeset"] as VersionedChangeset);
+                    yield slateChangesetUpcaster(item["changeset"] as VersionedSlateChangeset);
                 }
             }
             lastEvaluatedKey = response.LastEvaluatedKey;
         } while (lastEvaluatedKey);
     }
 
-    save(id: RecordId, changeset: Changeset): Promise<void> {
+    save(id: RecordId, changeset: SlateChangeset): Promise<void> {
         return this.dynamoDbClient.put({
             TableName: recordChangesetTableName,
             Item: {

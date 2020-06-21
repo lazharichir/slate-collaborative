@@ -1,8 +1,7 @@
 import React, {ChangeEvent, useCallback, useState} from 'react';
-import {randomUUID} from "common/util/randomUUID";
+import {randomUUID} from "record/action/randomUUID";
 import CollaborativeRichTextEditor from "./record/component/CollaborativeRichTextEditor";
-import {ClientId} from "common/record/ClientId";
-import {RecordId} from "common/record/Record";
+import {ClientId, RecordId} from "record";
 
 function App() {
     let [clientId, setClientId] = useState<ClientId>(() => {

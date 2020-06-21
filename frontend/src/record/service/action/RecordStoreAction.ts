@@ -1,16 +1,15 @@
-import {Changeset} from "common/record/action/Changeset";
-import {Record} from "common/record/Record";
-import {ClientId} from "common/record/ClientId";
 import {SlateOperation} from "slate-value";
+import {SlateChangeset, SlateRecord} from "common";
+import {ClientId} from "record";
 
 export type LoadRemoteRecord = {
     type: "load_remote_record";
-    record: Record;
+    record: SlateRecord;
 };
 
 export type ApplyRemoteChangeset = {
     type: "apply_remote_changeset";
-    changeset: Changeset;
+    changeset: SlateChangeset;
 };
 
 export type ApplyLocalOperations = {
@@ -21,8 +20,8 @@ export type ApplyLocalOperations = {
 
 export type SendChangeset = {
     type: "send_changeset";
-    inProgressChangeset: Changeset;
-    outstandingChangesets: Changeset[];
+    inProgressChangeset: SlateChangeset;
+    outstandingChangesets: SlateChangeset[];
 };
 
 export type ApplyUndo = {

@@ -1,8 +1,7 @@
 import {webSocketUrl} from "../../../config";
 import {Subscriber} from "../../../common/Subscriber";
 import {Subscription} from "../../../common/Subscription";
-import {Request} from "common/api/Request";
-import {Response} from "common/api/Response";
+import {Request, Response} from "common";
 
 export default class RecordWebsocket {
 

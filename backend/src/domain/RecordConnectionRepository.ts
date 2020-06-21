@@ -1,5 +1,5 @@
 import {ConnectionId} from "./ConnectionId";
-import {RecordId} from "common/record/Record";
+import {RecordId} from "record";
 
 export default interface RecordConnectionRepository {
     findConnectionsByRecordId(recordId: RecordId): Promise<ConnectionId[]>

@@ -1,8 +1,8 @@
 import ConnectionService from "./ConnectionService";
 import RecordConnectionRepository from "./RecordConnectionRepository";
 import {ConnectionId} from "./ConnectionId";
-import {Response} from "common/api/Response";
-import {RecordId} from "common/record/Record";
+import {Response} from "common";
+import {RecordId} from "record";
 
 export default class RecordConnectionService {
     private editorConnectionRepository: RecordConnectionRepository;
