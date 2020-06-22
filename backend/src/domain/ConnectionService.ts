@@ -1,7 +1,7 @@
 import {ConnectionId} from "./ConnectionId";
-import {Response} from "common/api/Response";
+import {Response} from "../application/Response";
 
-export default interface ConnectionService {
-    send(connectionId: ConnectionId, message: Response): Promise<void>;
+export default interface ConnectionService<V, S, O> {
+    send(connectionId: ConnectionId, message: Response<V, S, O>): Promise<void>;
     close(connectionId: ConnectionId): Promise<void>
 }

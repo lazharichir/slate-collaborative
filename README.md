@@ -72,9 +72,9 @@ The slate-value is a collaborative value type to support the slate-editor.
 
 The high-level concept to coordinate collaboration efforts of any collaborative value type.
 
-## Common
+## Record-Service
 
-The common code between the backend and the frontend.
+The record service code is a collaborative service for the frontend.
 
 ## Backend
 

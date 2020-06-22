@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "common": "file:../common/build",
     "slate-value": "file:../slate-value/build",
     "record": "file:../record/build"
   },

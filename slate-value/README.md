@@ -1,4 +1,4 @@
-# Slate-Value
+# Collaborative Value Type for Slate
 
 This package contains the necessary code structures to support collaborative editing of [Slate](https://www.slatejs.org/).
 

@@ -1,57 +1,67 @@
 import {ConnectionId} from "../domain/ConnectionId";
-import {Request} from "common";
 import RecordConnectionRepository from "../domain/RecordConnectionRepository";
-import RecordRepository from "../domain/RecordRepository";
 import ConnectionService from "../domain/ConnectionService";
-import ChangesetRepository from "../domain/ChangesetRepository";
+import RecordRepository from "../domain/RecordRepository";
 import RecordService from "../domain/RecordService";
 import RecordConnectionService from "../domain/RecordConnectionService";
-import {slateChangesetUpcaster} from "common";
+import {Changeset, changesetUpcaster, Record, VersionedChangeset} from "record";
+import {Request} from "./Request";
 
-export default class RequestHandler {
+export default class RequestHandler<VV, V, VS, S, VO, O> {
+    private readonly valueUpcaster: (versionedValue: VV) => V;
+    private readonly changesetUpcaster: (versionedChangeset: VersionedChangeset<VO>) => Changeset<O>;
 
     private recordConnectionRepository: RecordConnectionRepository
-    private recordRepository: RecordRepository
-    private connectionService: ConnectionService
-    private recordChangesetRepository: ChangesetRepository
-    private recordService: RecordService
-    private recordConnectionService: RecordConnectionService
+    private recordRepository: RecordRepository<V, S, O>
+    private connectionService: ConnectionService<V, S, O>
+    private recordService: RecordService<V, S, O>
+    private recordConnectionService: RecordConnectionService<V, S, O>
 
-    constructor(recordConnectionRepository: RecordConnectionRepository, recordRepository: RecordRepository, connectionService: ConnectionService, recordChangesetRepository: ChangesetRepository, recordService: RecordService, recordConnectionService: RecordConnectionService) {
+    constructor(
+        valueUpcaster: (versionedValue: VV) => V,
+        operationUpcaster: (versionedOperation: VO) => O,
+        recordConnectionRepository: RecordConnectionRepository, recordRepository: RecordRepository<V, S, O>, connectionService: ConnectionService<V, S, O>, recordService: RecordService<V, S, O>, recordConnectionService: RecordConnectionService<V, S, O>) {
+        this.valueUpcaster = valueUpcaster;
+        this.changesetUpcaster = changesetUpcaster(operationUpcaster);
         this.recordConnectionRepository = recordConnectionRepository
         this.recordRepository = recordRepository
         this.connectionService = connectionService
-        this.recordChangesetRepository = recordChangesetRepository
         this.recordService = recordService
         this.recordConnectionService = recordConnectionService
     }
 
-    async handle(connectionId: ConnectionId, request: Request): Promise<void> {
+    async handle(connectionId: ConnectionId, request: Request<VV, VO>): Promise<void> {
         if (request.type === "subscribe") {
-            let {id, since} = request;
-            await this.recordConnectionRepository.addConnection(id, connectionId);
-            if (since === "latest") {
-                let record = await this.recordRepository.find(id);
-                await this.connectionService.send(connectionId, {type: "record_loaded", id, record});
+            await this.recordConnectionRepository.addConnection(request.id, connectionId);
+            let since;
+            if (request.since === "latest") {
+                let record = await this.recordRepository.findRecord(request.id);
+                if (record === null) {
+                    record = Record.DEFAULT(this.valueUpcaster(request.defaultValue));
+                    await this.recordRepository.saveRecord(request.id, record);
+                }
+
+                await this.connectionService.send(connectionId, {type: "record_loaded", id: request.id, record});
                 since = record.version;
+            } else {
+                since = request.since;
             }
             let promises = [];
-            for await (const changeset of this.recordChangesetRepository.findSince(id, since)) {
-                promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id, changeset}));
+            for await (const changeset of this.recordRepository.findChangesetsSince(request.id, since)) {
+                promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id: request.id, changeset}));
             }
             await Promise.all(promises);
         } else if (request.type === "unsubscribe") {
             await this.recordConnectionRepository.removeConnection(request.id, connectionId);
         } else if (request.type === "apply_changeset") {
             let {id, changeset} = request;
-            let appliedChangeset = await this.recordService.applyChangeset(id, slateChangesetUpcaster(changeset));
+            let appliedChangeset = await this.recordService.applyChangeset(id, this.changesetUpcaster(changeset));
             if (appliedChangeset !== null) {
-                changeset = appliedChangeset;
                 await this.connectionService.send(connectionId, {
                     type: "changeset_applied",
-                    id, changeset
+                    id, changeset: appliedChangeset
                 })
-                await this.recordConnectionService.broadcast(id, {type: "changeset_applied", id, changeset}, connectionId);
+                await this.recordConnectionService.broadcast(id, {type: "changeset_applied", id, changeset: appliedChangeset}, connectionId);
             }
         } else if (request.type === "keep_alive") {
             // do nothing!

@@ -1,19 +1,19 @@
 import ConnectionService from "./ConnectionService";
 import RecordConnectionRepository from "./RecordConnectionRepository";
 import {ConnectionId} from "./ConnectionId";
-import {Response} from "common";
 import {RecordId} from "record";
+import {Response} from "../application/Response";
 
-export default class RecordConnectionService {
+export default class RecordConnectionService<V, S, O> {
     private editorConnectionRepository: RecordConnectionRepository;
-    private connectionService: ConnectionService;
+    private connectionService: ConnectionService<V, S, O>;
 
-    constructor(editorConnectionRepository: RecordConnectionRepository, connectionService: ConnectionService) {
+    constructor(editorConnectionRepository: RecordConnectionRepository, connectionService: ConnectionService<V, S, O>) {
         this.editorConnectionRepository = editorConnectionRepository;
         this.connectionService = connectionService;
     }
 
-    async broadcast(id: RecordId, response: Response, excludeConnectionId?: ConnectionId): Promise<void> {
+    async broadcast(id: RecordId, response: Response<V, S, O>, excludeConnectionId?: ConnectionId): Promise<void> {
         let connections = (await this.editorConnectionRepository.findConnectionsByRecordId(id))
             .filter(connectionId => connectionId !== excludeConnectionId);
         await Promise.all(connections.map(recordConnectionId =>

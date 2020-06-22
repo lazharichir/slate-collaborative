@@ -2,23 +2,27 @@ import RecordConnectionRepository from "../domain/RecordConnectionRepository";
 import {ConnectionId} from "../domain/ConnectionId";
 import {DynamoDB} from "aws-sdk";
 import {DocumentClient} from "aws-sdk/lib/dynamodb/document_client";
-import {recordConnectionTableName} from "../config";
 import {RecordId} from "record";
 import QueryOutput = DocumentClient.QueryOutput;
 
 export default class DynamoDBRecordConnectionRepository implements RecordConnectionRepository {
-    private dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
+    private readonly dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
+    private readonly recordConnectionTableName: string;
+
+    constructor(recordConnectionTableName: string) {
+        this.recordConnectionTableName = recordConnectionTableName;
+    }
 
     addConnection(id: RecordId, connectionId: ConnectionId): Promise<void> {
         return this.dynamoDbClient.put({
-            TableName: recordConnectionTableName,
+            TableName: this.recordConnectionTableName,
             Item: { id, connectionId }
         }).promise().then(() => {});
     }
 
     async findConnectionsByRecordId(id: RecordId): Promise<ConnectionId[]> {
         let response: DocumentClient.QueryOutput = await this.dynamoDbClient.query({
-            TableName: recordConnectionTableName,
+            TableName: this.recordConnectionTableName,
             ConsistentRead: true,
             ProjectionExpression: "connectionId",
             KeyConditionExpression: "id = :id",
@@ -36,14 +40,14 @@ export default class DynamoDBRecordConnectionRepository implements RecordConnect
 
     removeConnection(id: RecordId, connectionId: ConnectionId): Promise<void> {
         return this.dynamoDbClient.delete({
-            TableName: recordConnectionTableName,
+            TableName: this.recordConnectionTableName,
             Key: { id, connectionId }
         }).promise().then(() => {});
     }
 
     async findRecordIdsByConnectionId(connectionId: ConnectionId): Promise<RecordId[]> {
         let response: QueryOutput = await this.dynamoDbClient.query({
-            TableName: recordConnectionTableName,
+            TableName: this.recordConnectionTableName,
             IndexName: "connectionId-IDX",
             ProjectionExpression: "id",
             KeyConditionExpression: "connectionId = :connectionId",

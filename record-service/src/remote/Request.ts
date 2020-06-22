@@ -1,10 +1,16 @@
 import {VersionedChangeset, VersionedRecordId, VersionedRecordVersion} from "record";
 
-type SUBSCRIBE_TO_RECORD = {
+type SUBSCRIBE_TO_RECORD<VV> = {
     type: "subscribe";
     id: VersionedRecordId;
-    since: "latest" | VersionedRecordVersion
+    since: VersionedRecordVersion
+} | {
+    type: "subscribe";
+    id: VersionedRecordId;
+    since: "latest";
+    defaultValue: VV
 };
+
 
 type UNSUBSCRIBE_FROM_RECORD = {
     type: "unsubscribe";
@@ -21,8 +27,8 @@ type KEEP_ALIVE = {
     type: "keep_alive";
 };
 
-export type Request<VO> =
-    | SUBSCRIBE_TO_RECORD
+export type Request<VV, VO> =
+    | SUBSCRIBE_TO_RECORD<VV>
     | UNSUBSCRIBE_FROM_RECORD
     | APPLY_CHANGESET<VO>
     | KEEP_ALIVE
