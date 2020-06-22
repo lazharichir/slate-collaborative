@@ -3,15 +3,13 @@ import isHotkey from 'is-hotkey'
 import {Editable, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact} from 'slate-react'
 import {createEditor, Editor, Transforms} from 'slate'
 
-import useSlateResource from "../slate-resource/useSlateResource";
-import withUndoRedo from "../slate-resource/withUndoRedo";
+import {useCursorsDecorator, useSlateResource, withUndoRedo} from "slate-react-resource";
 import {SlateOperation} from "slate-value";
 import Caret from "./Caret";
 import Button from "./Button";
 import Icon from "./Icon";
 import Toolbar from "./Toolbar";
 import {ClientId, ResourceId} from "resource";
-import {useCursorsDecorator} from "../slate-resource/useCursorsDecorator";
 
 const HOTKEYS: {[key: string]: Format} = {
     'mod+b': 'bold',
@@ -81,7 +79,6 @@ export default function CollaborativeRichTextEditor(props: RichTextEditorProps) 
 }
 
 function toggleBlock(editor: Editor, format: Format) {
-    console.log("toggle", editor, format);
     const isActive = isBlockActive(editor, format)
     const isList = LIST_TYPES.includes(format)
 

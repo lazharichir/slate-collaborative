@@ -2,7 +2,7 @@ import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {SlateOperation, SlateSelection, SlateValue} from "slate-value";
 import {ClientId, Resource, ResourceId, ResourceVersion} from "resource";
 import {ResourceService} from "resource-service";
-import SlateResourceServiceContext from "./SlateResourceServiceContext";
+import {SlateResourceServiceContext} from "./SlateResourceServiceContext";
 
 type ResourceContext = {
     value: SlateValue;
@@ -14,7 +14,7 @@ type ResourceContext = {
     redo: () => void;
 };
 
-export default function useSlateResource(id: ResourceId, clientId: ClientId): ResourceContext {
+export function useSlateResource(id: ResourceId, clientId: ClientId): ResourceContext {
     let resourceService = useContext<ResourceService<SlateValue, SlateSelection, SlateOperation>>(SlateResourceServiceContext);
     let [resource, setResource] = useState<Resource<SlateValue, SlateSelection>>(Resource.DEFAULT(SlateValue.DEFAULT));
     useEffect(() => {

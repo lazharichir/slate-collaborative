@@ -68,13 +68,17 @@ The operations that were stored offline a few days ago must still be valid.
 
 The slate-value is a collaborative value type to support the slate-editor.
 
-## Record
+## Resource
 
 The high-level concept to coordinate collaboration efforts of any collaborative value type.
 
-## Record-Service
+## Resource-Service
 
-The record service code is a collaborative service for the frontend.
+The resource service code is a collaborative service for the frontend.
+
+## Slate-React-Resource
+
+Hooks to facilitate the usage of resource service in slate-react.
 
 ## Backend
 
@@ -86,10 +90,10 @@ The frontend code provides a means of viewing and editing the collaborative docu
 
 # How to Build & Deploy
 
-## Build Record
+## Build Resource
 
 ```
-cd record
+cd resource
 npm run build
 ```
 
@@ -100,10 +104,17 @@ cd slate-value
 npm run build
 ```
 
-## Build Common
+## Build Resource-Service
 
 ```
-cd common
+cd resource-service
+npm run build
+```
+
+## Build Slate-React-Resource
+
+```
+cd slate-react-resource
 npm run build
 ```
 
@@ -125,7 +136,7 @@ sam deploy
 Copy WebSocketURL from backend deployment to frontend/.env
 
 ```
-REACT_APP_WEBSOCKETURL={WebSocketURL}
+REACT_APP_SLATE_REACT_RESOURCE_WEBSOCKETURL={WebSocketURL}
 ```
 
 ```

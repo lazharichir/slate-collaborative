@@ -2,6 +2,8 @@ import React, {ChangeEvent, useCallback, useState} from 'react';
 import {randomUUID} from "./util/randomUUID";
 import CollaborativeRichTextEditor from "./editor/CollaborativeRichTextEditor";
 import {ClientId, ResourceId} from "resource";
+import {slateResourceService, SlateResourceServiceContext} from "slate-react-resource";
+import {webSocketUrl} from "./config";
 
 function App() {
     let [clientId, setClientId] = useState<ClientId>(() => {
@@ -36,15 +38,17 @@ function App() {
 
     return (
     <div className="App">
-        <div>
-            <label>Client ID:</label>
-            <input value={clientId} onChange={handleClientIdChange} />
-        </div>
-        <div>
-            <label>Record ID:</label>
-            <input value={resourceId} onChange={handleResourceIdChange} />
-        </div>
-        <CollaborativeRichTextEditor resourceId={resourceId} clientId={clientId} />
+        <SlateResourceServiceContext.Provider value={slateResourceService(webSocketUrl)}>
+            <div>
+                <label>Client ID:</label>
+                <input value={clientId} onChange={handleClientIdChange} />
+            </div>
+            <div>
+                <label>Record ID:</label>
+                <input value={resourceId} onChange={handleResourceIdChange} />
+            </div>
+            <CollaborativeRichTextEditor resourceId={resourceId} clientId={clientId} />
+        </SlateResourceServiceContext.Provider>
     </div>
   );
 }
