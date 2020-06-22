@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "main": "handler.js",
   "dependencies": {
-    "common": "file:../../common/build",
     "slate-value": "file:../../slate-value/build",
-    "record": "file:../../record/build"
+    "resource": "file:../../resource/build"
   },
-  "bundleDependencies": ["common", "slate-value", "record"]
+  "bundleDependencies": ["slate-value", "resource"]
 }

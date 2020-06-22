@@ -3,12 +3,7 @@ import {VersionedChangeset, VersionedResourceId, VersionedResourceVersion} from 
 type SUBSCRIBE_TO_RECORD<VV> = {
     type: "subscribe";
     id: VersionedResourceId;
-    since: VersionedResourceVersion
-} | {
-    type: "subscribe";
-    id: VersionedResourceId;
-    since: "latest",
-    defaultValue: VV
+    since: "latest" | VersionedResourceVersion
 };
 
 type UNSUBSCRIBE_FROM_RECORD = {

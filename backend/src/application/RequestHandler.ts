@@ -36,11 +36,6 @@ export default class RequestHandler<VV, V, VS, S, VO, O> {
             let since;
             if (request.since === "latest") {
                 let resource = await this.resourceRepository.findResource(request.id);
-                if (resource === null) {
-                    resource = Resource.DEFAULT(this.valueUpcaster(request.defaultValue));
-                    await this.resourceRepository.saveResource(request.id, resource);
-                }
-
                 await this.connectionService.send(connectionId, {type: "resource_loaded", id: request.id, resource});
                 since = resource.version;
             } else {

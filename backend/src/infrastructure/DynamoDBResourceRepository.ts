@@ -15,25 +15,28 @@ import QueryInput = DocumentClient.QueryInput;
 
 export default class DynamoDBResourceRepository<VV, V, VS, S, VO, O> implements ResourceRepository<V, S, O> {
     private readonly dynamoDbClient: DynamoDB.DocumentClient = new DynamoDB.DocumentClient();
-    private resourceTableName: string;
-    private resourceChangesetTableName: string;
+    private readonly resourceTableName: string;
+    private readonly resourceChangesetTableName: string;
     private readonly resourceUpcaster: (versionedResource: VersionedResource<VV, VS>) => Resource<V, S>;
     private readonly changesetUpcaster: (versionedChangeset: VersionedChangeset<VO>) => Changeset<O>;
+    private readonly defaultValue: V;
 
     constructor(
         resourceTableName: string,
         resourceChangesetTableName: string,
         valueUpcaster: (versionedValue: VV) => V,
         selectionUpcaster: (versionedSelection: VS) => S,
-        operationUpcaster: (versionedOperation: VO) => O
+        operationUpcaster: (versionedOperation: VO) => O,
+        defaultValue: V
     ) {
         this.resourceTableName = resourceTableName;
         this.resourceChangesetTableName = resourceChangesetTableName;
         this.resourceUpcaster = resourceUpcaster(valueUpcaster, selectionUpcaster);
         this.changesetUpcaster = changesetUpcaster(operationUpcaster);
+        this.defaultValue = defaultValue;
     }
 
-    findResource(id: ResourceId): Promise<Resource<V, S> | null> {
+    findResource(id: ResourceId): Promise<Resource<V, S>> {
         return this.dynamoDbClient.get({
             TableName: this.resourceTableName,
             Key: { id },
@@ -43,7 +46,7 @@ export default class DynamoDBResourceRepository<VV, V, VS, S, VO, O> implements 
             if (response.Item) {
                 return this.resourceUpcaster(response.Item["resource"] as VersionedResource<VV, VS>);
             } else {
-                return null;
+                return Resource.DEFAULT(this.defaultValue);
             }
         });
     }
