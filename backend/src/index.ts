@@ -24,12 +24,12 @@ import {Request} from "./application/Request";
 // noinspection JSUnusedGlobalSymbols
 export async function handler(event: APIGatewayProxyEvent, _context: Context): Promise<APIGatewayProxyResult> {
   let webSocketEndpoint = event.requestContext.domainName + "/" + event.requestContext.stage;
-  let connectionService: ConnectionService<SlateValue, SlateSelection, SlateOperation> = new ApiGatewayConnectionService<SlateValue, SlateSelection, SlateOperation>(webSocketEndpoint);
   let resourceConnectionRepository: ResourceConnectionRepository = new DynamoDBResourceConnectionRepository(resourceConnectionTableName);
   let resourceRepository: ResourceRepository<SlateValue, SlateSelection, SlateOperation> = new DynamoDBResourceRepository<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(resourceTableName, resourceChangesetTableName, slateValueUpcaster, slateSelectionUpcaster, slateOperationUpcaster, SlateValue.DEFAULT);
+  let connectionService: ConnectionService<SlateValue, SlateSelection, SlateOperation> = new ApiGatewayConnectionService<SlateValue, SlateSelection, SlateOperation>(webSocketEndpoint);
   let resourceService: ResourceService<SlateValue, SlateSelection, SlateOperation> = new ResourceService<SlateValue, SlateSelection, SlateOperation>(slateValueReducer, slateSelectionsReducer, slateOperationsTransformer, resourceRepository);
   let resourceConnectionService: ResourceConnectionService<SlateValue, SlateSelection, SlateOperation> = new ResourceConnectionService<SlateValue, SlateSelection, SlateOperation>(resourceConnectionRepository, connectionService);
-  let requestHandler: RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation> = new RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(slateValueUpcaster, slateOperationUpcaster, resourceConnectionRepository, resourceRepository, connectionService, resourceService, resourceConnectionService);
+  let requestHandler: RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation> = new RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(slateValueUpcaster, slateOperationUpcaster, connectionService, resourceService, resourceConnectionService);
 
   const connectionId = event.requestContext.connectionId as null | ConnectionId;
   try {

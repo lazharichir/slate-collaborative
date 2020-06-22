@@ -1,5 +1,5 @@
 import ResourceRepository from "./ResourceRepository";
-import {Changeset, changesetsTransformer, Resource, ResourceId, resourceReducer} from "resource";
+import {Changeset, changesetsTransformer, Resource, ResourceId, resourceReducer, ResourceVersion} from "resource";
 
 export default class ResourceService<V, S, O> {
     private readonly resourceRepository: ResourceRepository<V, S, O>
@@ -16,13 +16,20 @@ export default class ResourceService<V, S, O> {
         this.resourceRepository = resourceRepository;
     }
 
+    findResource(id: ResourceId): Promise<Resource<V, S>> {
+        return this.resourceRepository.findResource(id);
+    }
+
+    findChangesetsSince(id: ResourceId, version: ResourceVersion): AsyncIterable<Changeset<O>> {
+        return this.resourceRepository.findChangesetsSince(id, version);
+    }
+
     async applyChangeset(id: ResourceId, changeset: Changeset<O>): Promise<Changeset<O> | null> {
         let attempt = 0;
         while (true) {
             try {
                 let transformedChangeset = changeset;
                 let resource = await this.resourceRepository.findResource(id);
-                if (resource === null) throw new Error(`Cannot apply changeset on non-existant resource.`);
                 if (resource.version + 1 !== changeset.version) {
                     for await (const appliedChangeset of this.resourceRepository.findChangesetsSince(id, transformedChangeset.version)) {
                         if (appliedChangeset.id === transformedChangeset.id) {
