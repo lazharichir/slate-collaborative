@@ -1,16 +1,17 @@
 import React, {KeyboardEvent, useCallback, useMemo} from 'react'
 import isHotkey from 'is-hotkey'
 import {Editable, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact} from 'slate-react'
-import {createEditor, Editor, Path, Point, Range, Text, Transforms} from 'slate'
+import {createEditor, Editor, Transforms} from 'slate'
 
-import useRecord from "../useRecord";
-import withUndoRedo from "./withUndoRedo";
+import useSlateRecord from "../slate-record/useSlateRecord";
+import withUndoRedo from "../slate-record/withUndoRedo";
 import {SlateOperation} from "slate-value";
 import Caret from "./Caret";
 import Button from "./Button";
 import Icon from "./Icon";
 import Toolbar from "./Toolbar";
 import {ClientId, RecordId} from "record";
+import {useCursorsDecorator} from "../slate-record/useCursorsDecorator";
 
 const HOTKEYS: {[key: string]: Format} = {
     'mod+b': 'bold',
@@ -39,34 +40,12 @@ type RichTextEditorProps = {
 }
 
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
-    let {value, selection, cursors, version, apply, undo, redo} = useRecord(props.recordId, props.clientId);
+    let {value, selection, cursors, version, apply, undo, redo} = useSlateRecord(props.recordId, props.clientId);
+    const cursorsDecoration = useCursorsDecorator(cursors);
     const editor = useMemo(() => withUndoRedo(withReact(createEditor()), undo, redo), [undo, redo])
     let changeHandler = useCallback(() => apply(editor.operations as SlateOperation[]), [editor, apply]);
-    const cursorsDecoration = useCallback(([node, path]): Range[] => {
-        if (!Text.isText(node)) return [];
-        return Object.keys(cursors).flatMap((clientId: ClientId): Range[] => {
-            const selection = cursors[clientId];
-            if (selection === null) return [];
-            if (!Range.includes(selection, path)) return [];
-            const { focus, anchor } = selection
-            const isFocusNode = Path.equals(focus.path, path)
-            const isAnchorNode = Path.equals(anchor.path, path)
-            const isForward = Point.isBefore(anchor, focus)
-
-            return [{
-                ...selection,
-                cursor: clientId,
-                isForwardCaret: isFocusNode && isForward,
-                isBackwardCaret: isFocusNode && !isForward,
-                anchor: { path, offset: isAnchorNode ? anchor.offset : isForward ? 0 : node.text.length },
-                focus: { path, offset: isFocusNode ? focus.offset : isForward ? node.text.length : 0 }
-            }];
-        })
-    }, [cursors]);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     let renderLeaf = useCallback((props) => Leaf(props), [cursorsDecoration]);
-
     return (
         <Slate key={props.recordId + props.clientId} editor={editor} selection={selection} value={value.children} onChange={changeHandler}>
             Version: {version}

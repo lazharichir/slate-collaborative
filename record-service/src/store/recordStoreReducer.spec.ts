@@ -3,36 +3,33 @@ import {RecordStore} from "../domain/RecordStore";
 
 describe("Record Store Reducer", () => {
     it("loads remote record", () => {
-        expect(recordStoreReducer(RecordStore.DEFAULT, {
+        expect(recordStoreReducer<number, number, number>(
+            value => value,
+            (clientId, selections, operation) => selections,
+            operation => operation,
+            (leftOperations, topOperations, tieBreaker) => [leftOperations, topOperations],
+            operation => true
+        )(RecordStore.defaultRecordStore(1), {
             type: "load_remote_record",
             record: {
                 metadata: {type: "RECORD", version: 1},
                 version: 1,
                 cursors: {},
-                value: {
-                    metadata: {type: "SLATE_VALUE", version: 1},
-                    children: []
-                }
+                value: 1
             }
         })).toEqual({
             remoteRecord: {
                 metadata: {type: "RECORD", version: 1},
                 version: 1,
                 cursors: {},
-                value: {
-                    metadata: {type: "SLATE_VALUE", version: 1},
-                    children: []
-                }
+                value: 1
             },
             unprocessedChangesets: [],
             localRecord: {
                 metadata: {type: "RECORD", version: 1},
                 version: 1,
                 cursors: {},
-                value: {
-                    metadata: {type: "SLATE_VALUE", version: 1},
-                    children: []
-                }
+                value: 1
             },
             inProgressChangeset: null,
             outstandingChangesets: [],

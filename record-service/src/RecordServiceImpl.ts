@@ -1,24 +1,42 @@
-import {RecordService} from "../domain/RecordService";
-import {RecordStore} from "../domain/RecordStore";
-import {Subscriber} from "../../../common/Subscriber";
-import RecordStoreStorage from "../domain/RecordStoreStorage";
-import IndexedDBRecordStoreStorage from "./IndexedDBRecordStoreStorage";
-import RecordWebsocket from "./RecordWebsocket";
-import {Subscription} from "../../../common/Subscription";
-import recordStoreReducer from "../reducer/recordStoreReducer";
-import {webSocketUrl} from "../../../config";
-import {SlateOperation} from "slate-value";
-import {ClientId, RecordId} from "record";
-import {SlateChangeset, slateChangesetsOptimizer, SlateRecord} from "common";
-import {randomUUID} from "../../../randomUUID";
+import recordStoreReducer from "./store/recordStoreReducer";
+import {Changeset, changesetsOptimizer, ClientId, Record, RecordId} from "record";
+import {randomUUID} from "./util/randomUUID";
+import {RecordStoreAction} from "./store/RecordStoreAction";
+import {RecordService} from "./RecordService";
+import {RecordStoreStorage} from "./store/RecordStoreStorage";
+import {RecordStore} from "./store/RecordStore";
+import RecordWebsocket from "./remote/RecordWebsocket";
+import IndexedDBRecordStoreStorage from "./local/IndexedDBRecordStoreStorage";
+import {Subscriber} from "./Subscriber";
+import {Subscription} from "./Subscription";
 
-export default class NetworkAwareRecordService implements RecordService {
-    private readonly recordStores: {[key: string]: RecordStore} = {};
-    private readonly subscribers: {[key: string]: Subscriber<SlateRecord>[]} = {};
-    private readonly recordStoreStorage: RecordStoreStorage = new IndexedDBRecordStoreStorage();
-    private websocket: RecordWebsocket | null = null;
+export class RecordServiceImpl<VV, V, VS, S, VO, O> implements RecordService<V, S, O> {
+    private readonly recordStoreStorage: RecordStoreStorage<V, S, O>;
+    private readonly reducer: (recordStore: RecordStore<V, S, O>, action: RecordStoreAction<V, S, O>) => RecordStore<V, S, O>;
+    private readonly optimizer: (changesets: Changeset<O>[]) => Changeset<O>[];
+    private readonly websocketUrl: string;
 
-    constructor() {
+    private readonly recordStores: { [key: string]: RecordStore<V, S, O> } = {};
+    private readonly subscribers: { [key: string]: Subscriber<Record<V, S>>[] } = {};
+    private websocket: RecordWebsocket<V, S, O> | null = null;
+
+    constructor(
+        websocketUrl: string,
+        defaultValue: V,
+        valueReducer: (value: V, operation: O) => V,
+        valueUpcaster: (versionedValue: VV) => V,
+        selectionsReducer: (clientId: ClientId, selections: {[key: string]: S}, operation: O) => {[key: string]: S},
+        operationsTransformer: (leftOperations: O[], topOperations: O[], tieBreaker: boolean) => [O[], O[]],
+        operationUpcaster: (versionedOperation: VO) => O,
+        operationInverter: (operation: O) => O,
+        operationsOptimizer: (operations: O[]) => O[],
+        isMutationOperation: (operation: O) => boolean
+    ) {
+        this.websocketUrl = websocketUrl;
+        this.recordStoreStorage = new IndexedDBRecordStoreStorage<VV, V, VS, S, VO, O>(defaultValue, valueUpcaster, operationUpcaster);
+        this.optimizer = changesetsOptimizer(operationsOptimizer)
+        this.reducer = recordStoreReducer(valueReducer, selectionsReducer, operationInverter, operationsTransformer, isMutationOperation);
+
         this.recordStores = {};
         if (window.navigator.onLine) {
             this.connect();
@@ -27,7 +45,7 @@ export default class NetworkAwareRecordService implements RecordService {
         window.addEventListener("offline", () => this.disconnect());
     }
 
-    async subscribe(id: RecordId, subscriber: Subscriber<SlateRecord>): Promise<Subscription> {
+    async subscribe(id: RecordId, subscriber: Subscriber<Record<V, S>>): Promise<Subscription> {
         if (this.recordStores[id] === undefined) {
             this.recordStores[id] = await this.recordStoreStorage.find(id)
         }
@@ -50,12 +68,16 @@ export default class NetworkAwareRecordService implements RecordService {
         };
     }
 
-    async applyOperations(id: RecordId, clientId: ClientId, operations: SlateOperation[]) {
+    async applyOperations(id: RecordId, clientId: ClientId, operations: O[]) {
         if (this.recordStores[id] === undefined) {
             this.recordStores[id] = await this.recordStoreStorage.find(id)
         }
 
-        this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "apply_local_operations", clientId, operations});
+        this.recordStores[id] = this.reducer(this.recordStores[id], {
+            type: "apply_local_operations",
+            clientId,
+            operations
+        });
 
         this.sendOutstandingChangesets(id);
 
@@ -76,7 +98,11 @@ export default class NetworkAwareRecordService implements RecordService {
         }
 
         let {remoteRecord} = this.recordStores[id];
-        this.websocket.send({type: "subscribe", id: id, since: remoteRecord.version === 0 ? "latest" : remoteRecord.version + 1});
+        this.websocket.send({
+            type: "subscribe",
+            id: id,
+            since: remoteRecord.version === 0 ? "latest" : remoteRecord.version + 1
+        });
         this.resendInProgressChangeset(id);
         this.sendOutstandingChangesets(id);
 
@@ -104,11 +130,11 @@ export default class NetworkAwareRecordService implements RecordService {
         let {remoteRecord, inProgressChangeset, outstandingChangesets} = this.recordStores[id];
 
         if (inProgressChangeset === null && outstandingChangesets.length > 0) {
-            let outstandingOperations = outstandingChangesets.reduce((operations: SlateOperation[], changeset: SlateChangeset): SlateOperation[] => {
+            let outstandingOperations = outstandingChangesets.reduce((operations: O[], changeset: Changeset<O>): O[] => {
                 return [...operations, ...changeset.operations];
             }, []);
 
-            let inProgressChangeset: SlateChangeset = slateChangesetsOptimizer([{
+            let inProgressChangeset: Changeset<O> = this.optimizer([{
                 metadata: {type: "CHANGESET", version: 1},
                 id: randomUUID(),
                 clientId: outstandingChangesets[0].clientId,
@@ -116,7 +142,11 @@ export default class NetworkAwareRecordService implements RecordService {
                 operations: outstandingOperations
             }])[0];
 
-            this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "send_changeset", inProgressChangeset, outstandingChangesets: []})
+            this.recordStores[id] = this.reducer(this.recordStores[id], {
+                type: "send_changeset",
+                inProgressChangeset,
+                outstandingChangesets: []
+            })
             this.websocket.send({type: "apply_changeset", id: id, changeset: inProgressChangeset});
         }
     }
@@ -125,7 +155,7 @@ export default class NetworkAwareRecordService implements RecordService {
         if (this.recordStores[id] === undefined) {
             this.recordStores[id] = await this.recordStoreStorage.find(id)
         }
-        this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "apply_redo", clientId});
+        this.recordStores[id] = this.reducer(this.recordStores[id], {type: "apply_redo", clientId});
 
         this.sendOutstandingChangesets(id);
 
@@ -137,7 +167,7 @@ export default class NetworkAwareRecordService implements RecordService {
         if (this.recordStores[id] === undefined) {
             this.recordStores[id] = await this.recordStoreStorage.find(id)
         }
-        this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "apply_undo", clientId});
+        this.recordStores[id] = this.reducer(this.recordStores[id], {type: "apply_undo", clientId});
         this.sendOutstandingChangesets(id);
 
         this.broadcast(id);
@@ -145,21 +175,24 @@ export default class NetworkAwareRecordService implements RecordService {
     }
 
     connect() {
-        if (!webSocketUrl) return;
+        if (!this.websocketUrl) return;
         if (this.websocket) return;
 
-        this.websocket = new RecordWebsocket();
-        this.websocket.subscribe((response) => {
+        this.websocket = new RecordWebsocket<V, S, O>(this.websocketUrl);
+        this.websocket.subscribe(response => {
             if (response.type === "record_loaded") {
                 let {id, record} = response;
-                this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "load_remote_record", record});
+                this.recordStores[id] = this.reducer(this.recordStores[id], {type: "load_remote_record", record});
                 this.resendInProgressChangeset(id);
                 this.sendOutstandingChangesets(id);
                 this.broadcast(response.id);
                 this.recordStoreStorage.save(id, this.recordStores[id]).then();
             } else if (response.type === "changeset_applied") {
                 let {id, changeset} = response;
-                this.recordStores[id] = recordStoreReducer(this.recordStores[id], {type: "apply_remote_changeset", changeset});
+                this.recordStores[id] = this.reducer(this.recordStores[id], {
+                    type: "apply_remote_changeset",
+                    changeset
+                });
 
                 if (this.recordStores[id].inProgressChangeset === null) {
                     this.sendOutstandingChangesets(id);

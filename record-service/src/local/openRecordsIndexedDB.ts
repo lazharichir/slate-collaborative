@@ -1,4 +1,4 @@
-export default function openRecordsIndexedDB(): Promise<IDBDatabase> {
+export function openRecordsIndexedDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         if (!window.indexedDB) reject("indexedDB not available.");
 

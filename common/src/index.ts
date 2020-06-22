@@ -1,5 +1,5 @@
 import {
-    slateCursorsReducer,
+    slateSelectionsReducer,
     SlateOperation,
     slateOperationInverter,
     slateOperationsOptimizer,
@@ -27,7 +27,7 @@ export const SlateChangeset = {
 };
 export type SlateRecord = Record.Record<SlateValue, SlateSelection>;
 
-export const slateRecordReducer = Record.recordReducer<SlateValue, SlateSelection, SlateOperation>(slateValueReducer, slateCursorsReducer);
+export const slateRecordReducer = Record.recordReducer<SlateValue, SlateSelection, SlateOperation>(slateValueReducer, slateSelectionsReducer);
 export const slateRecordUpcaster = Record.recordUpcaster<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection>(slateValueUpcaster, slateSelectionUpcaster);
 export const slateChangesetInverter = Record.changesetInverter<SlateOperation>(slateOperationInverter);
 export const slateChangesetsTransformer = Record.changesetsTransformer<SlateOperation>(slateOperationsTransformer);

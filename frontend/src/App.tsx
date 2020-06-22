@@ -1,6 +1,6 @@
 import React, {ChangeEvent, useCallback, useState} from 'react';
-import {randomUUID} from "./randomUUID";
-import CollaborativeRichTextEditor from "./record/component/CollaborativeRichTextEditor";
+import {randomUUID} from "./util/randomUUID";
+import CollaborativeRichTextEditor from "./editor/CollaborativeRichTextEditor";
 import {ClientId, RecordId} from "record";
 
 function App() {

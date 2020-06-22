@@ -1,8 +1,9 @@
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
-import RecordServiceContext from "./service/context/RecordServiceContext";
 import {SlateOperation, SlateSelection, SlateValue} from "slate-value";
 import {ClientId, RecordId, RecordVersion} from "record";
 import {SlateRecord} from "common";
+import SlateRecordServiceContext from "./SlateRecordServiceContext";
+import {RecordService} from "record-service";
 
 type RecordContext = {
     value: SlateValue;
@@ -14,8 +15,8 @@ type RecordContext = {
     redo: () => void;
 };
 
-export default function useRecord(id: RecordId, clientId: ClientId): RecordContext {
-    let recordService = useContext(RecordServiceContext);
+export default function useSlateRecord(id: RecordId, clientId: ClientId): RecordContext {
+    let recordService = useContext<RecordService<SlateValue, SlateSelection, SlateOperation>>(SlateRecordServiceContext);
     let [record, setRecord] = useState<SlateRecord>(SlateRecord.DEFAULT);
     useEffect(() => {
         return () => {

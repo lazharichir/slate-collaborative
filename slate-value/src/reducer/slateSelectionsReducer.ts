@@ -3,7 +3,7 @@ import {localSelectionReducer} from "./localSelectionReducer";
 import {remoteSelectionReducer} from "./remoteSelectionReducer";
 import {SlateOperation} from "..";
 
-export function slateCursorsReducer(clientId: string, state: {[key: string]: SlateSelection}, operation: SlateOperation): {[key: string]: SlateSelection} {
+export function slateSelectionsReducer(clientId: string, state: {[key: string]: SlateSelection}, operation: SlateOperation): {[key: string]: SlateSelection} {
     let cursors = {...state};
     if (cursors[clientId] === undefined) {
         cursors[clientId] = null;
