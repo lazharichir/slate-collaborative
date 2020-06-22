@@ -1,7 +1,6 @@
 import {slateOperationTransformer} from "./slateOperationTransformer";
 import {Path} from "../Path";
 import {Point} from "../Point";
-import openRecordsIndexedDB from "../../../frontend/src/record/service/infrastructure/openRecordsIndexedDB";
 
 describe("Merge Node Transformer", () => {
     describe("set_selection applied", () => {

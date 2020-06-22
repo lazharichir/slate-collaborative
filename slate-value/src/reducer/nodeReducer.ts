@@ -3,7 +3,7 @@ import {
     RemoveNodeOperation,
     SetSelectionOperation,
     SlateOperation
-} from "../action/SlateOperation";
+} from "../SlateOperation";
 import {Node} from "../Node";
 import {pathTransform} from "../transformer/pathTransformer";
 import {getNode} from "./getNode";

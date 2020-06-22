@@ -1,6 +1,6 @@
-import {Path} from "../Path";
-import {Node} from "../Node";
-import {Range} from "../Range";
+import {Path} from "./Path";
+import {Node} from "./Node";
+import {Range} from "./Range";
 
 export type InsertNodeOperation = {
     type: 'insert_node',

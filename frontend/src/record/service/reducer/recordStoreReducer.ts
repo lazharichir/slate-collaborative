@@ -1,7 +1,7 @@
 import {RecordStore} from "../domain/RecordStore";
 import {RecordStoreAction} from "../action/RecordStoreAction";
 import {SlateChangeset, slateChangesetInverter, slateChangesetsTransformer, slateRecordReducer} from "common";
-import {ChangesetId} from "record/action/Changeset";
+import {randomUUID} from "../../../randomUUID";
 
 function incrementVersion(changeset: SlateChangeset) {
     return ({...changeset, version: changeset.version + 1});
@@ -21,7 +21,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
     } else if (action.type === "apply_local_operations") {
         let outstandingChangeset: SlateChangeset = {
             metadata: {type: "CHANGESET", version: 1},
-            id: ChangesetId.generate(),
+            id: randomUUID(),
             clientId: action.clientId,
             version: localRecord.version + 1,
             operations: action.operations
@@ -112,7 +112,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
         while (undoQueue.length > 0) {
             let undoChangeset = {
                 ...undoQueue[0],
-                id: ChangesetId.generate(),
+                id: randomUUID(),
                 clientId: action.clientId,
                 version: localRecord.version + 1
             };
@@ -129,7 +129,7 @@ export default function recordStoreReducer(recordStore: RecordStore, action: Rec
         while (redoQueue.length > 0) {
             let redoChangeset: SlateChangeset = {
                 ...redoQueue[0],
-                id: ChangesetId.generate(),
+                id: randomUUID(),
                 clientId: action.clientId,
                 version: localRecord.version + 1
             };

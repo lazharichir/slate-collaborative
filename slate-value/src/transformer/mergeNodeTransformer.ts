@@ -1,4 +1,4 @@
-import {MergeNodeOperation, SlateOperation} from "../action/SlateOperation";
+import {MergeNodeOperation, SlateOperation} from "../SlateOperation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 

@@ -1,4 +1,4 @@
-import {RemoveNodeOperation, SlateOperation} from "../action/SlateOperation";
+import {RemoveNodeOperation, SlateOperation} from "../SlateOperation";
 import {Path} from "../Path";
 import {nodeReducer} from "../reducer/nodeReducer";
 import {pathTransform} from "./pathTransformer";

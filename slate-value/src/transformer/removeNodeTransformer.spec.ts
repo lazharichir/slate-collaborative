@@ -1,7 +1,7 @@
 import {slateOperationTransformer} from "./slateOperationTransformer";
 import {Path} from "../Path";
 import {Node} from "../Node";
-import {SetSelectionOperation} from "../action/SlateOperation";
+import {SetSelectionOperation} from "../SlateOperation";
 
 describe("Remove Node Transformer", () => {
     describe("set_selection applied", () => {

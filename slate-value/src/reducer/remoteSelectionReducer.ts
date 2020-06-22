@@ -1,5 +1,5 @@
 import {SlateSelection} from "../SlateSelection";
-import {SlateOperation} from "../action/SlateOperation";
+import {SlateOperation} from "..";
 import {rangeTransformer} from "../transformer/rangeTransformer";
 
 export function remoteSelectionReducer(state: SlateSelection, action: SlateOperation): SlateSelection {

@@ -10,7 +10,7 @@ import {webSocketUrl} from "../../../config";
 import {SlateOperation} from "slate-value";
 import {ClientId, RecordId} from "record";
 import {SlateChangeset, slateChangesetsOptimizer, SlateRecord} from "common";
-import {ChangesetId} from "record/action/Changeset";
+import {randomUUID} from "../../../randomUUID";
 
 export default class NetworkAwareRecordService implements RecordService {
     private readonly recordStores: {[key: string]: RecordStore} = {};
@@ -110,7 +110,7 @@ export default class NetworkAwareRecordService implements RecordService {
 
             let inProgressChangeset: SlateChangeset = slateChangesetsOptimizer([{
                 metadata: {type: "CHANGESET", version: 1},
-                id: ChangesetId.generate(),
+                id: randomUUID(),
                 clientId: outstandingChangesets[0].clientId,
                 version: remoteRecord.version + 1,
                 operations: outstandingOperations

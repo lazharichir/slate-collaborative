@@ -1,4 +1,4 @@
-import {RemoveTextOperation, SlateOperation} from "../action/SlateOperation";
+import {RemoveTextOperation, SlateOperation} from "../SlateOperation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 

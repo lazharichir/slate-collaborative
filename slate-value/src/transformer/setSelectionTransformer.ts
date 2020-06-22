@@ -1,5 +1,5 @@
 import {Range} from "../Range";
-import {SetSelectionOperation, SlateOperation} from "../action/SlateOperation";
+import {SetSelectionOperation, SlateOperation} from "../SlateOperation";
 import {pointTransformer} from "./pointTransformer";
 import {rangeTransformer} from "./rangeTransformer";
 

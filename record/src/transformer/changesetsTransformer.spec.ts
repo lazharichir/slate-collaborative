@@ -20,7 +20,8 @@ describe("Changeset Transformation Square", () => {
                 metadata: {type: "CHANGESET", version: 1},
                 id: "456", version: 2, clientId: "def",
                 operations: [2]
-            }]
+            }],
+            false
         )).toThrowError();
     });
     it("simply returns when only one side has changesets", () => {
@@ -30,7 +31,8 @@ describe("Changeset Transformation Square", () => {
                 id: "123", version: 1, clientId: "abc",
                 operations: [1]
             }],
-            []
+            [],
+            false
         )).toEqual([
             [{
                 metadata: {type: "CHANGESET", version: 1},
@@ -42,23 +44,30 @@ describe("Changeset Transformation Square", () => {
     });
 
     it("transforms changesets", () => {
-        expect(changesetsTransformer(operationsTransformer)([{
-            metadata: {type: "CHANGESET", version: 1},
-            id: "123",
-            version: 1,
-            clientId: "abc",
-            operations: [1]
-        }], [{
+        expect(changesetsTransformer(operationsTransformer)(
+            [{
+                metadata: {type: "CHANGESET", version: 1},
+                id: "123",
+                version: 1,
+                clientId: "abc",
+                operations: [1]
+            }],
+            [{
             metadata: {type: "CHANGESET", version: 1},
             id: "321", version: 1, clientId: "def",
             operations: [1]
-        }])).toEqual([[{
-            metadata: {type: "CHANGESET", version: 1},
-            id: "123", version: 2, clientId: "abc",
-            operations: []
-        }], [{
-            metadata: {type: "CHANGESET", version: 1}, id: "321", version: 2, clientId: "def",
-            operations: []
-        }]]);
+            }],
+            false
+        )).toEqual([
+            [{
+                metadata: {type: "CHANGESET", version: 1},
+                id: "123", version: 2, clientId: "abc",
+                operations: []
+            }],
+            [{
+                metadata: {type: "CHANGESET", version: 1}, id: "321", version: 2, clientId: "def",
+                operations: []
+            }]
+        ]);
     });
 });

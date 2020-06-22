@@ -1,12 +1,7 @@
-import {RecordVersion} from "../Record";
-import {randomUUID} from "./randomUUID";
-import {ClientId} from "../ClientId";
+import {RecordVersion} from "./Record";
+import {ClientId} from "./ClientId";
 
 export type ChangesetId = string;
-
-export const ChangesetId = {
-    generate: randomUUID as () => ChangesetId,
-}
 
 export type Changeset<O> = {
     metadata: {type: "CHANGESET"; version: 1;};

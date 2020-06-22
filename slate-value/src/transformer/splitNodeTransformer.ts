@@ -1,4 +1,4 @@
-import {SlateOperation, SplitNodeOperation} from "../action/SlateOperation";
+import {SlateOperation, SplitNodeOperation} from "../SlateOperation";
 import {Path} from "../Path";
 import {pathTransform} from "./pathTransformer";
 

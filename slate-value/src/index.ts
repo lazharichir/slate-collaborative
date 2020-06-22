@@ -1,4 +1,4 @@
-export {SlateOperation} from "./action/SlateOperation";
+export {SlateOperation} from "./SlateOperation";
 export {slateOperationUpcaster} from "./upcaster/slateOperationUpcaster";
 export {slateOperationsTransformer} from "./transformer/slateOperationsTransformer";
 export {slateOperationsOptimizer} from "./optimizer/slateOperationsOptimizer";
