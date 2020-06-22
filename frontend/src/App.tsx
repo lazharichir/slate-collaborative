@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useCallback, useState} from 'react';
 import {randomUUID} from "./util/randomUUID";
 import CollaborativeRichTextEditor from "./editor/CollaborativeRichTextEditor";
-import {ClientId, RecordId} from "record";
+import {ClientId, ResourceId} from "resource";
 
 function App() {
     let [clientId, setClientId] = useState<ClientId>(() => {
@@ -19,20 +19,20 @@ function App() {
         setClientId(event.target.value);
     }, [setClientId]);
 
-    let [recordId, setRecordId] = useState<RecordId>(() => {
-        let storedRecordId = localStorage.getItem("recordId");
-        if (storedRecordId === null) {
-            let recordId = randomUUID();
-            localStorage.setItem("recordId", recordId);
-            return recordId;
+    let [resourceId, setResourceId] = useState<ResourceId>(() => {
+        let storedResourceId = localStorage.getItem("resourceId");
+        if (storedResourceId === null) {
+            let resourceId = randomUUID();
+            localStorage.setItem("resourceId", resourceId);
+            return resourceId;
         } else {
-            return storedRecordId;
+            return storedResourceId;
         }
     });
-    let handleRecordIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        localStorage.setItem("recordId", event.target.value);
-        setRecordId(event.target.value);
-    }, [setRecordId]);
+    let handleResourceIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        localStorage.setItem("resourceId", event.target.value);
+        setResourceId(event.target.value);
+    }, [setResourceId]);
 
     return (
     <div className="App">
@@ -42,9 +42,9 @@ function App() {
         </div>
         <div>
             <label>Record ID:</label>
-            <input value={recordId} onChange={handleRecordIdChange} />
+            <input value={resourceId} onChange={handleResourceIdChange} />
         </div>
-        <CollaborativeRichTextEditor recordId={recordId} clientId={clientId} />
+        <CollaborativeRichTextEditor resourceId={resourceId} clientId={clientId} />
     </div>
   );
 }

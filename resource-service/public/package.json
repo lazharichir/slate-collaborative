@@ -1,0 +1,8 @@
+{
+  "name": "resource-service",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "resource": "file:../../resource/build"
+  }
+}

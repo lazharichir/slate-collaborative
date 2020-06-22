@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "slate-value": "file:../slate-value/build",
-    "record": "file:../record/build"
+    "resource": "file:../resource/build"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.54",

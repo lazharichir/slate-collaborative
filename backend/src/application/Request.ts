@@ -1,24 +1,24 @@
-import {VersionedChangeset, VersionedRecordId, VersionedRecordVersion} from "record";
+import {VersionedChangeset, VersionedResourceId, VersionedResourceVersion} from "resource";
 
 type SUBSCRIBE_TO_RECORD<VV> = {
     type: "subscribe";
-    id: VersionedRecordId;
-    since: VersionedRecordVersion
+    id: VersionedResourceId;
+    since: VersionedResourceVersion
 } | {
     type: "subscribe";
-    id: VersionedRecordId;
+    id: VersionedResourceId;
     since: "latest",
     defaultValue: VV
 };
 
 type UNSUBSCRIBE_FROM_RECORD = {
     type: "unsubscribe";
-    id: VersionedRecordId;
+    id: VersionedResourceId;
 };
 
 type APPLY_CHANGESET<VO> = {
     type: "apply_changeset";
-    id: VersionedRecordId;
+    id: VersionedResourceId;
     changeset: VersionedChangeset<VO>;
 };
 

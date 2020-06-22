@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 
 Resources:
     # Backend
-    RecordChangesetTable:
+    ResourceChangesetTable:
         Type: AWS::DynamoDB::Table
         Properties:
             BillingMode: PROVISIONED
@@ -20,7 +20,7 @@ Resources:
                 KeyType: HASH
             -   AttributeName: version
                 KeyType: RANGE
-    RecordTable:
+    ResourceTable:
         Type: AWS::DynamoDB::Table
         Properties:
             BillingMode: PROVISIONED
@@ -33,7 +33,7 @@ Resources:
             KeySchema:
             -   AttributeName: id
                 KeyType: HASH
-    RecordConnectionTable:
+    ResourceConnectionTable:
         Type: AWS::DynamoDB::Table
         Properties:
             BillingMode: PROVISIONED
@@ -95,12 +95,12 @@ Resources:
                     -   dynamodb:DeleteItem
                     Effect: Allow
                     Resource:
-                    -   !GetAtt RecordChangesetTable.Arn
-                    -   !GetAtt RecordTable.Arn
-                    -   !GetAtt RecordConnectionTable.Arn
+                    -   !GetAtt ResourceChangesetTable.Arn
+                    -   !GetAtt ResourceTable.Arn
+                    -   !GetAtt ResourceConnectionTable.Arn
                     -   !Join
                         -   ''
-                        -   -   !GetAtt RecordConnectionTable.Arn
+                        -   -   !GetAtt ResourceConnectionTable.Arn
                             -   '/index/connectionId-IDX'
                 -   Action:
                     -   execute-api:ManageConnections
@@ -118,9 +118,9 @@ Resources:
             Timeout: 120
             Environment:
                 Variables:
-                    RECORD_CHANGESET_TABLE_NAME: !Ref RecordChangesetTable
-                    RECORD_TABLE_NAME: !Ref RecordTable
-                    RECORD_CONNECTION_TABLE_NAME: !Ref RecordConnectionTable
+                    RESOURCE_CHANGESET_TABLE_NAME: !Ref ResourceChangesetTable
+                    RESOURCE_TABLE_NAME: !Ref ResourceTable
+                    RESOURCE_CONNECTION_TABLE_NAME: !Ref ResourceConnectionTable
     BackendApi:
         Type: AWS::ApiGatewayV2::Api
         Properties:

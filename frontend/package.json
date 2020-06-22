@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "common": "file:../common/build",
-    "record": "file:../record/build",
+    "resource": "file:../resource/build",
     "slate-value": "file:../slate-value/build",
-    "record-service": "file:../record-service/build",
+    "resource-service": "file:../resource-service/build",
     "emotion": "^10.0.27",
     "material-icons": "^0.3.1",
     "react": "^16.13.1",

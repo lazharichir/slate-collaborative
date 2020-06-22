@@ -1,15 +1,15 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda/trigger/api-gateway-proxy";
 import {Context} from "aws-lambda/handler";
-import DynamoDBRecordConnectionRepository from "./infrastructure/DynamoDBRecordConnectionRepository";
-import RecordConnectionRepository from "./domain/RecordConnectionRepository";
+import DynamoDBResourceConnectionRepository from "./infrastructure/DynamoDBResourceConnectionRepository";
+import ResourceConnectionRepository from "./domain/ResourceConnectionRepository";
 import ConnectionService from "./domain/ConnectionService";
 import ApiGatewayConnectionService from "./infrastructure/ApiGatewayConnectionService";
-import DynamoDBRecordRepository from "./infrastructure/DynamoDBRecordRepository";
-import RecordService from "./domain/RecordService";
-import RecordConnectionService from "./domain/RecordConnectionService";
+import DynamoDBResourceRepository from "./infrastructure/DynamoDBResourceRepository";
+import ResourceService from "./domain/ResourceService";
+import ResourceConnectionService from "./domain/ResourceConnectionService";
 import RequestHandler from "./application/RequestHandler";
 import {ConnectionId} from "./domain/ConnectionId";
-import RecordRepository from "./domain/RecordRepository";
+import ResourceRepository from "./domain/ResourceRepository";
 import {
   SlateOperation, slateOperationsTransformer,
   slateOperationUpcaster,
@@ -18,18 +18,18 @@ import {
   SlateValue, slateValueReducer,
   slateValueUpcaster, VersionedSlateOperation, VersionedSlateSelection, VersionedSlateValue
 } from "slate-value";
-import {recordChangesetTableName, recordConnectionTableName, recordTableName} from "./config";
+import {resourceChangesetTableName, resourceConnectionTableName, resourceTableName} from "./config";
 import {Request} from "./application/Request";
 
 // noinspection JSUnusedGlobalSymbols
 export async function handler(event: APIGatewayProxyEvent, _context: Context): Promise<APIGatewayProxyResult> {
   let webSocketEndpoint = event.requestContext.domainName + "/" + event.requestContext.stage;
   let connectionService: ConnectionService<SlateValue, SlateSelection, SlateOperation> = new ApiGatewayConnectionService<SlateValue, SlateSelection, SlateOperation>(webSocketEndpoint);
-  let recordConnectionRepository: RecordConnectionRepository = new DynamoDBRecordConnectionRepository(recordConnectionTableName);
-  let recordRepository: RecordRepository<SlateValue, SlateSelection, SlateOperation> = new DynamoDBRecordRepository<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(recordTableName, recordChangesetTableName, slateValueUpcaster, slateSelectionUpcaster, slateOperationUpcaster);
-  let recordService: RecordService<SlateValue, SlateSelection, SlateOperation> = new RecordService<SlateValue, SlateSelection, SlateOperation>(slateValueReducer, slateSelectionsReducer, slateOperationsTransformer, recordRepository);
-  let recordConnectionService: RecordConnectionService<SlateValue, SlateSelection, SlateOperation> = new RecordConnectionService<SlateValue, SlateSelection, SlateOperation>(recordConnectionRepository, connectionService);
-  let requestHandler: RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation> = new RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(slateValueUpcaster, slateOperationUpcaster, recordConnectionRepository, recordRepository, connectionService, recordService, recordConnectionService);
+  let resourceConnectionRepository: ResourceConnectionRepository = new DynamoDBResourceConnectionRepository(resourceConnectionTableName);
+  let resourceRepository: ResourceRepository<SlateValue, SlateSelection, SlateOperation> = new DynamoDBResourceRepository<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(resourceTableName, resourceChangesetTableName, slateValueUpcaster, slateSelectionUpcaster, slateOperationUpcaster);
+  let resourceService: ResourceService<SlateValue, SlateSelection, SlateOperation> = new ResourceService<SlateValue, SlateSelection, SlateOperation>(slateValueReducer, slateSelectionsReducer, slateOperationsTransformer, resourceRepository);
+  let resourceConnectionService: ResourceConnectionService<SlateValue, SlateSelection, SlateOperation> = new ResourceConnectionService<SlateValue, SlateSelection, SlateOperation>(resourceConnectionRepository, connectionService);
+  let requestHandler: RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation> = new RequestHandler<VersionedSlateValue, SlateValue, VersionedSlateSelection, SlateSelection, VersionedSlateOperation, SlateOperation>(slateValueUpcaster, slateOperationUpcaster, resourceConnectionRepository, resourceRepository, connectionService, resourceService, resourceConnectionService);
 
   const connectionId = event.requestContext.connectionId as null | ConnectionId;
   try {
@@ -40,9 +40,9 @@ export async function handler(event: APIGatewayProxyEvent, _context: Context): P
           await requestHandler.handle(connectionId, request);
         }
       } else if (event.requestContext.routeKey === "$disconnect") {
-        const recordIds = await recordConnectionRepository.findRecordIdsByConnectionId(connectionId);
-        await Promise.all(recordIds.map(recordId =>
-            recordConnectionRepository.removeConnection(recordId, connectionId)
+        const resourceIds = await resourceConnectionRepository.findResourceIdsByConnectionId(connectionId);
+        await Promise.all(resourceIds.map(resourceId =>
+            resourceConnectionRepository.removeConnection(resourceId, connectionId)
         ));
       }
     }

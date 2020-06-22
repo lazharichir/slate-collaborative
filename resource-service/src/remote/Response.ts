@@ -1,6 +1,6 @@
 import {Changeset, Resource, ResourceId} from "resource";
 
-type RECORD_LOADED<V, S> = {
+type RESOURCE_LOADED<V, S> = {
     type: "resource_loaded";
     id: ResourceId;
     resource: Resource<V, S>;
@@ -17,7 +17,7 @@ type KEEP_ALIVE = {
 };
 
 export type Response<V, S, O> =
-    | RECORD_LOADED<V, S>
+    | RESOURCE_LOADED<V, S>
     | CHANGESET_APPLIED<O>
     | KEEP_ALIVE
     ;

@@ -3,15 +3,15 @@ import isHotkey from 'is-hotkey'
 import {Editable, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact} from 'slate-react'
 import {createEditor, Editor, Transforms} from 'slate'
 
-import useSlateRecord from "../slate-record/useSlateRecord";
-import withUndoRedo from "../slate-record/withUndoRedo";
+import useSlateResource from "../slate-resource/useSlateResource";
+import withUndoRedo from "../slate-resource/withUndoRedo";
 import {SlateOperation} from "slate-value";
 import Caret from "./Caret";
 import Button from "./Button";
 import Icon from "./Icon";
 import Toolbar from "./Toolbar";
-import {ClientId, RecordId} from "record";
-import {useCursorsDecorator} from "../slate-record/useCursorsDecorator";
+import {ClientId, ResourceId} from "resource";
+import {useCursorsDecorator} from "../slate-resource/useCursorsDecorator";
 
 const HOTKEYS: {[key: string]: Format} = {
     'mod+b': 'bold',
@@ -36,18 +36,18 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list']
 
 type RichTextEditorProps = {
     clientId: ClientId,
-    recordId: RecordId
+    resourceId: ResourceId
 }
 
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
-    let {value, selection, cursors, version, apply, undo, redo} = useSlateRecord(props.recordId, props.clientId);
+    let {value, selection, cursors, version, apply, undo, redo} = useSlateResource(props.resourceId, props.clientId);
     const cursorsDecoration = useCursorsDecorator(cursors);
     const editor = useMemo(() => withUndoRedo(withReact(createEditor()), undo, redo), [undo, redo])
     let changeHandler = useCallback(() => apply(editor.operations as SlateOperation[]), [editor, apply]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     let renderLeaf = useCallback((props) => Leaf(props), [cursorsDecoration]);
     return (
-        <Slate key={props.recordId + props.clientId} editor={editor} selection={selection} value={value.children} onChange={changeHandler}>
+        <Slate key={props.resourceId + props.clientId} editor={editor} selection={selection} value={value.children} onChange={changeHandler}>
             Version: {version}
             <Toolbar>
                 <MarkButton format="bold" icon="format_bold" />
