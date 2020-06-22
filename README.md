@@ -93,35 +93,35 @@ The frontend code provides a means of viewing and editing the collaborative docu
 ## Build Resource
 
 ```
-cd resource
+cd packages/resource
 npm run build
 ```
 
 ## Build Slate-Value
 
 ```
-cd slate-value
+cd packages/slate-value
 npm run build
 ```
 
 ## Build Resource-Service
 
 ```
-cd resource-service
+cd packages/resource-service
 npm run build
 ```
 
 ## Build Slate-React-Resource
 
 ```
-cd slate-react-resource
+cd packages/slate-react-resource
 npm run build
 ```
 
 ## Build Backend
 
 ```
-cd backend
+cd packages/backend
 npm run build
 ```
 
@@ -140,7 +140,7 @@ REACT_APP_SLATE_REACT_RESOURCE_WEBSOCKETURL={WebSocketURL}
 ```
 
 ```
-cd frontend
+cd packages/frontend
 npm run build
 ```
 
@@ -149,7 +149,7 @@ npm run build
 ### Locally
 
 ```
-cd frontend
+cd packages/frontend
 npm run start
 ```
 

@@ -2,5 +2,12 @@
 /.idea
 *.iml
 
+# Yarn
+.yarn
+node_modules
+
 # Environment files
 /samconfig.toml
+
+# Log Files
+yarn-error.log

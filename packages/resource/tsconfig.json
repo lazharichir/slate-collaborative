@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["esnext"],
+    "incremental": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
+}

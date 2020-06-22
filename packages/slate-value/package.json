@@ -1,0 +1,22 @@
+{
+  "name": "@wleroux/slate-value",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@types/node": "^12.12.44",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.5"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "copy \"public\\\" \"dist\\\"",
+    "test": "jest"
+  }
+}

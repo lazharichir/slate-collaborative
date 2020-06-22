@@ -112,7 +112,7 @@ Resources:
         Type: AWS::Lambda::Function
         Properties:
             Runtime: nodejs12.x
-            Code: backend/build
+            Code: packages/backend/dist
             Handler: index.handler
             Role: !GetAtt BackendRole.Arn
             Timeout: 120

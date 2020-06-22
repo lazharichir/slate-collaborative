@@ -1,0 +1,11 @@
+{
+  "name": "@wleroux/backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@wleroux/resource": "file:../../resource/dist",
+    "@wleroux/slate-value": "file:../../slate-value/dist"
+  }
+}

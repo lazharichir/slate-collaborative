@@ -1,0 +1,11 @@
+{
+  "name": "@wleroux/slate-react-resource",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@wleroux/resource": "^0.1.0",
+    "@wleroux/slate-value": "^0.1.0"
+  }
+}

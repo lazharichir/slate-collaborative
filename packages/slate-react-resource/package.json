@@ -1,0 +1,31 @@
+{
+  "name": "@wleroux/slate-react-resource",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "dependencies": {
+    "@wleroux/resource": "file:../resource",
+    "@wleroux/resource-service": "file:../resource-service",
+    "@wleroux/slate-value": "file:../slate-value",
+    "react": "^16.13.1",
+    "slate": "^0.58.3",
+    "slate-react": "^0.58.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@types/node": "^12.12.44",
+    "@types/react": "^16.9.38",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.5"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "copy \"public\\\" \"dist\\\"",
+    "test": "jest"
+  }
+}
