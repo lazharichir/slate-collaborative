@@ -1,7 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import App from './App';
-import Button from "./editor/component/Button";
+import {render} from '@testing-library/react';
+import Button from "./editor/Button";
 
 test('renders learn react link', () => {
   const { getByText } = render(<Button active>learn react</Button>);
