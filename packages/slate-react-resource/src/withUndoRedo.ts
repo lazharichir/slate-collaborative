@@ -1,4 +1,4 @@
-import {ReactEditor} from "slate-react";
+import { ReactEditor } from "slate-react";
 
 type UndoRedoEditor = {
     undo: () => void,
