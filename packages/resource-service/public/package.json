@@ -2,8 +2,8 @@
   "name": "@wleroux/resource-service",
   "version": "0.1.0",
   "private": true,
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
   "dependencies": {
     "@wleroux/resource": "^0.1.0"
   }
