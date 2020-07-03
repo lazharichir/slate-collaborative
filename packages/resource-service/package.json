@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "copy \"public\\\" \"dist\\\"",
+    "postbuild": "cp -R public/ dist",
     "test": "jest"
   }
 }
