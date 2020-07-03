@@ -9,7 +9,12 @@
   ],
   "dependencies": {
     "@wleroux/resource": "file:../resource",
-    "@wleroux/slate-value": "file:../slate-value"
+    "@wleroux/slate-value": "file:../slate-value",
+    "fastify": "next",
+    "fastify-cli": "next",
+    "fastify-plugin": "next",
+    "fastify-websocket": "next",
+    "ws": "^7.3.0"
   },
   "bundledDependencies": [
     "@wleroux/resource",
@@ -20,9 +25,13 @@
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^24.9.0",
     "@types/node": "^12.12.44",
+    "@types/ws": "^7.2.6",
+    "@types/source-map-support": "^0.5.1",
+    "nodemon": "^2.0.4",
     "jest": "^24.9.0",
     "ts-jest": "^24.3.0",
-    "typescript": "^3.7.5"
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
   },
   "peerDependencies": {
     "aws-lambda": "^1.0.6",
@@ -30,7 +39,10 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "copy \"public\\\" \"dist\\\" && cd dist && npm install --production",
+    "postbuild": "cp -R public/ dist && cd dist && npm install --production",
+    "start": "npm run build && node dist/src/server.js",
+    "start:dev": "ts-node --files ./src/server.ts",
+    "start:watch": "nodemon",
     "test": "jest"
   }
 }
