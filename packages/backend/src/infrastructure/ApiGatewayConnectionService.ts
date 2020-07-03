@@ -2,6 +2,8 @@ import * as AWS from "aws-sdk";
 import ConnectionService from "../domain/ConnectionService";
 import {ConnectionId} from "../domain/ConnectionId";
 import {Response} from "../application/Response";
+import { SocketStream } from "fastify-websocket";
+import { FastifyRequest } from "fastify";
 
 export default class ApiGatewayConnectionService<V, S, O> implements ConnectionService<V, S, O> {
 
@@ -22,5 +24,9 @@ export default class ApiGatewayConnectionService<V, S, O> implements ConnectionS
         return this.apigwManagementApi.deleteConnection({
             ConnectionId: connectionId
         }).promise().then(() => {});
-    }
+	}
+	
+	open(connectionId: ConnectionId, connection: SocketStream, request: FastifyRequest): Promise<void> {
+		return Promise.resolve()
+	}
 }
