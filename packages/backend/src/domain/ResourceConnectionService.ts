@@ -29,7 +29,7 @@ export default class ResourceConnectionService<V, S, O> {
 			try {
 				return this.connectionService.send(resourceConnectionId, response)
 			} catch (e) {
-				console.error(e)
+				console.error(`broadcast error: `, e)
 				return this.resourceConnectionRepository.removeConnection(id, resourceConnectionId)
 				// throw e;
 			}

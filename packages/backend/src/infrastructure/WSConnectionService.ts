@@ -27,8 +27,9 @@ export default class WSConnectionService<V, S, O>
 	): Promise<void> {
 
 		const client = this.connections.get(connectionId)
-
-		console.log(`⬆️ Sending to ${connectionId}: `, JSON.stringify(message), { client: client?.connectionId })
+		
+		if (message.type !== `keep_alive`)
+			console.log(`⬆️ Sending to ${connectionId}: `, JSON.stringify(message), { client: client?.connectionId })
 		
 		if (!client) {
 			console.log(`⬆️ Connection not found: ${connectionId}. `, JSON.stringify(this.connections.keys(), null, 2))

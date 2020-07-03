@@ -6,14 +6,21 @@ export default class InMemoryResourceConnectionRepository implements ResourceCon
 
 	private rows: { id: ResourceId, connectionId: ConnectionId }[] = []
 
-    constructor() {}
+    constructor() {
+
+		console.log(`🆕🆕🆕 InMemoryResourceConnectionRepository 🆕🆕🆕`)
+
+		setInterval(() => {
+			console.log(`\n\nInMemory Resource Connection – STATE\n`, this.rows)
+		}, 3000)
+
+	}
 
     async addConnection(id: ResourceId, connectionId: ConnectionId): Promise<void> {
 		this.log(`🧳 InMemoryResourceConnectionRepository.addConnection: `, { id, connectionId })
-		const row = this.rows.find((row) => row.id === id && row.connectionId === connectionId)
-		if (!row) {
-			this.rows.push({ id, connectionId })
-		}
+		this.rows = this.rows.concat({ id, connectionId })
+
+		//.filter((row) => row.id !== id && row.connectionId !== connectionId)
     }
 
     async findConnectionsByResourceId(id: ResourceId): Promise<ConnectionId[]> {
@@ -23,14 +30,18 @@ export default class InMemoryResourceConnectionRepository implements ResourceCon
     }
 
     async removeConnection(id: ResourceId, connectionId: ConnectionId): Promise<void> {
-		this.log(`🧳 InMemoryResourceConnectionRepository.removeConnection: `, { id, connectionId })
-		this.rows = this.rows.filter((row) => row.id !== id && row.connectionId !== connectionId)
+		this.log(`🧳 InMemoryResourceConnectionRepository.removeConnection: `, { id, connectionId }, { before: this.rows.length })
+		this.rows = this.rows.filter((row) => {
+			const isItTheConnection = row.id === id && row.connectionId === connectionId
+			return !isItTheConnection
+		})
+		this.log({ after: this.rows.length })
     }
 	
     async findResourceIdsByConnectionId(connectionId: ConnectionId): Promise<ResourceId[]> {
 		const rows = this.rows.filter((row) => row.connectionId === connectionId).map((row) => row.id)
 		this.log(`🧳 InMemoryResourceConnectionRepository.findResourceIdsByConnectionId: `, { connectionId }, rows, this.rows)
-		return rows;
+		return rows
 	}
 	
 	private log(...args: any[]) {

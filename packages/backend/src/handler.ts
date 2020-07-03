@@ -127,7 +127,8 @@ export async function websocketHandler(
 				VersionedSlateOperation
 			>
 
-			console.log(`> message`, request)
+			if (request.type !== `keep_alive`)
+				console.log(`⬇️ [${connectionId}] says `, request)
 
 			await requestHandler.handle(connectionId, request)
 		})
