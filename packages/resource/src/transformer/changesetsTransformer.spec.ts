@@ -13,12 +13,12 @@ describe("Changeset Transformation Square", () => {
         expect(() => changesetsTransformer(operationsTransformer)(
             [{
                 metadata: {type: "CHANGESET", version: 1},
-                id: "123", version: 1, clientId: "abc",
+                id: "123", revision: 1, client: "abc",
                 operations: [1]
             }],
             [{
                 metadata: {type: "CHANGESET", version: 1},
-                id: "456", version: 2, clientId: "def",
+                id: "456", revision: 2, client: "def",
                 operations: [2]
             }],
             false
@@ -28,7 +28,7 @@ describe("Changeset Transformation Square", () => {
         expect(changesetsTransformer(operationsTransformer)(
             [{
                 metadata: {type: "CHANGESET", version: 1},
-                id: "123", version: 1, clientId: "abc",
+                id: "123", revision: 1, client: "abc",
                 operations: [1]
             }],
             [],
@@ -36,7 +36,7 @@ describe("Changeset Transformation Square", () => {
         )).toEqual([
             [{
                 metadata: {type: "CHANGESET", version: 1},
-                id: "123", version: 1, clientId: "abc",
+                id: "123", revision: 1, client: "abc",
                 operations: [1]
             }],
             []
@@ -48,24 +48,24 @@ describe("Changeset Transformation Square", () => {
             [{
                 metadata: {type: "CHANGESET", version: 1},
                 id: "123",
-                version: 1,
-                clientId: "abc",
+                revision: 1,
+                client: "abc",
                 operations: [1]
             }],
             [{
             metadata: {type: "CHANGESET", version: 1},
-            id: "321", version: 1, clientId: "def",
+            id: "321", revision: 1, client: "def",
             operations: [1]
             }],
             false
         )).toEqual([
             [{
                 metadata: {type: "CHANGESET", version: 1},
-                id: "123", version: 2, clientId: "abc",
+                id: "123", revision: 2, client: "abc",
                 operations: []
             }],
             [{
-                metadata: {type: "CHANGESET", version: 1}, id: "321", version: 2, clientId: "def",
+                metadata: {type: "CHANGESET", version: 1}, id: "321", revision: 2, client: "def",
                 operations: []
             }]
         ]);

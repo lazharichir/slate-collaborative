@@ -4,7 +4,7 @@ import {randomUUID} from "../util/randomUUID";
 import {ResourceStore} from "./ResourceStore";
 
 function incrementVersion<O>(changeset: Changeset<O>) {
-    return ({...changeset, version: changeset.version + 1});
+    return ({...changeset, revision: changeset.revision + 1});
 }
 
 export function resourceStoreReducer<V, S, O>(
@@ -23,7 +23,7 @@ export function resourceStoreReducer<V, S, O>(
         let {remoteResource, unprocessedChangesets, localResource, inProgressChangeset, outstandingChangesets, undoQueue, redoQueue} = resourceStore;
         if (action.type === "load_remote_resource") {
             remoteResource = action.resource;
-            unprocessedChangesets = unprocessedChangesets.filter(unprocessedChangeset => remoteResource.version >= unprocessedChangeset.version);
+            unprocessedChangesets = unprocessedChangesets.filter(unprocessedChangeset => remoteResource.revision >= unprocessedChangeset.revision);
 
             localResource = remoteResource;
             inProgressChangeset = null;
@@ -34,8 +34,8 @@ export function resourceStoreReducer<V, S, O>(
             let outstandingChangeset: Changeset<O> = {
                 metadata: {type: "CHANGESET", version: 1},
                 id: randomUUID(),
-                clientId: action.clientId,
-                version: localResource.version + 1,
+                client: action.client,
+                revision: localResource.revision + 1,
                 operations: action.operations
             };
 
@@ -49,10 +49,10 @@ export function resourceStoreReducer<V, S, O>(
                 redoQueue = redoQueue.map(incrementVersion);
             }
         } else if (action.type === "apply_remote_changeset") {
-            if (remoteResource.version < action.changeset.version) {
+            if (remoteResource.revision < action.changeset.revision) {
                 if (!unprocessedChangesets.some(unprocessedChangeset => unprocessedChangeset.id === action.changeset.id)) {
-                    unprocessedChangesets = [...unprocessedChangesets, action.changeset].sort((a, b) => a.version - b.version);
-                    while (unprocessedChangesets.length > 0 && unprocessedChangesets[0].version === remoteResource.version + 1) {
+                    unprocessedChangesets = [...unprocessedChangesets, action.changeset].sort((a, b) => a.revision - b.revision);
+                    while (unprocessedChangesets.length > 0 && unprocessedChangesets[0].revision === remoteResource.revision + 1) {
                         let appliedChangeset = unprocessedChangesets[0];
                         remoteResource = reducer(remoteResource, appliedChangeset)
                         unprocessedChangesets = unprocessedChangesets.slice(1);
@@ -103,11 +103,11 @@ export function resourceStoreReducer<V, S, O>(
         } else if (action.type === "send_changeset") {
             undoQueue = undoQueue.map(changeset => ({
                 ...changeset,
-                version: changeset.version + action.outstandingChangesets.length - outstandingChangesets.length + 1
+                revision: changeset.revision + action.outstandingChangesets.length - outstandingChangesets.length + 1
             }));
             redoQueue = redoQueue.map(changeset => ({
                 ...changeset,
-                version: changeset.version + action.outstandingChangesets.length - outstandingChangesets.length + 1
+                revision: changeset.revision + action.outstandingChangesets.length - outstandingChangesets.length + 1
             }));
 
             inProgressChangeset = action.inProgressChangeset;
@@ -125,8 +125,8 @@ export function resourceStoreReducer<V, S, O>(
                 let undoChangeset = {
                     ...undoQueue[0],
                     id: randomUUID(),
-                    clientId: action.clientId,
-                    version: localResource.version + 1
+                    client: action.client,
+                    revision: localResource.revision + 1
                 };
 
                 undoQueue = undoQueue.slice(1);
@@ -142,8 +142,8 @@ export function resourceStoreReducer<V, S, O>(
                 let redoChangeset: Changeset<O> = {
                     ...redoQueue[0],
                     id: randomUUID(),
-                    clientId: action.clientId,
-                    version: localResource.version + 1
+                    client: action.client,
+                    revision: localResource.revision + 1
                 };
 
                 redoQueue = redoQueue.slice(1);

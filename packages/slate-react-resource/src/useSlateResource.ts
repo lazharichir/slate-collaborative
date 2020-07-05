@@ -8,7 +8,7 @@ import {
 	ClientId,
 	Resource,
 	ResourceId,
-	ResourceVersion,
+	ResourceRevision,
 } from "@wleroux/resource"
 import { ResourceService } from "@wleroux/resource-service"
 import { SlateResourceServiceContext } from "./SlateResourceServiceContext"
@@ -17,7 +17,7 @@ type ResourceContext = {
 	value: SlateValue
 	selection: SlateSelection
 	cursors: { [key: string]: SlateSelection }
-	version: ResourceVersion
+	revision: ResourceRevision
 	apply: (operations: SlateOperation[]) => void
 	undo: () => void
 	redo: () => void
@@ -78,7 +78,7 @@ export function useSlateResource(
 		value: resource.value,
 		selection: selection,
 		cursors: cursors,
-		version: resource.version,
+		revision: resource.revision,
 		apply,
 		undo,
 		redo,

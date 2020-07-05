@@ -1,7 +1,7 @@
-type VersionedResourceId_1 = string;
+type VersionResourceId_1 = string;
 
 export type VersionedResourceId =
-    | VersionedResourceId_1
+    | VersionResourceId_1
     ;
 
 type VersionedClientId_1 = string;
@@ -10,10 +10,10 @@ export type VersionedClientId =
     | VersionedClientId_1
     ;
 
-type VersionedResourceVersion_1 = number;
+type VersionedResourceRevision_1 = number;
 
-export type VersionedResourceVersion =
-    | VersionedResourceVersion_1
+export type VersionedResourceRevision =
+    | VersionedResourceRevision_1
     ;
 
 type VersionedResource_1<VV, VS> = {
@@ -21,7 +21,7 @@ type VersionedResource_1<VV, VS> = {
         type: "RESOURCE";
         version: 1;
     };
-    version: VersionedResourceVersion;
+    revision: VersionedResourceRevision;
     value: VV;
     cursors: {[key: string]: VS};
 };

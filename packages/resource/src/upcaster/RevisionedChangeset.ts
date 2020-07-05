@@ -1,4 +1,4 @@
-import {VersionedClientId, VersionedResourceVersion} from "..";
+import {VersionedClientId, VersionedResourceRevision} from "..";
 
 type VersionedChangesetId_1 = string;
 
@@ -9,8 +9,8 @@ export type VersionedChangesetId =
 type VersionedChangeset_1<VO> = {
     metadata: {type: "CHANGESET"; version: 1;};
     id: VersionedChangesetId;
-    clientId: VersionedClientId;
-    version: VersionedResourceVersion;
+    client: VersionedClientId;
+    revision: VersionedResourceRevision;
     operations: VO[];
 };
 

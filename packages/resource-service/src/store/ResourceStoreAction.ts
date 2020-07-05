@@ -12,7 +12,7 @@ export type ApplyRemoteChangeset<O> = {
 
 export type ApplyLocalOperations<O> = {
     type: "apply_local_operations";
-    clientId: ClientId;
+    client: ClientId;
     operations: O[];
 };
 
@@ -24,12 +24,12 @@ export type SendChangeset<O> = {
 
 export type ApplyUndo = {
     type: "apply_undo";
-    clientId: ClientId;
+    client: ClientId;
 };
 
 export type ApplyRedo = {
     type: "apply_redo";
-    clientId: ClientId;
+    client: ClientId;
 };
 
 export type ResourceStoreAction<V, S, O> =

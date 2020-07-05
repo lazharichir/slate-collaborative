@@ -1,4 +1,4 @@
-import {VersionedResource} from "./VersionedResource";
+import {VersionedResource} from "./RevisionedResource";
 import {Resource} from "../Resource";
 
 export function resourceUpcaster<VV, V, VS, S>(valueUpcaster: (versionedValue: VV) => V, selectionUpcaster: (versionedSelection: VS) => S): (versionedRecord: VersionedResource<VV, VS>) => Resource<V, S> {

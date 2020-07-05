@@ -3,16 +3,16 @@ import {
     Changeset,
     changesetUpcaster,
     ResourceId,
-    ResourceVersion,
+    ResourceRevision,
     VersionedChangeset,
-    VersionedResourceVersion
+    VersionedResourceRevision
 } from "@wleroux/resource";
 import {ResourceStoreStorage} from "../store/ResourceStoreStorage";
 import {ResourceStore} from "../store/ResourceStore";
 
 type VersionedIndexedDBResource_1<VV> = {
     metadata: {type: "RESOURCE"; version: 1; };
-    version: VersionedResourceVersion;
+    revision: VersionedResourceRevision;
     value: VV;
 };
 
@@ -34,7 +34,7 @@ type VersionedIndexedDBResourceStore<VV, VO> =
 
 type IndexedDBResource<V> = {
     metadata: {type: "RESOURCE"; version: 1; };
-    version: ResourceVersion;
+    revision: ResourceRevision;
     value: V;
 }
 
@@ -102,13 +102,13 @@ export default class IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O> implemen
                 unprocessedChangesets: indexedDBResourceStore.unprocessedChangesets,
                 localResource: {
                     metadata: {type: "RESOURCE", version: 1},
+                    revision: indexedDBResourceStore.localResource.revision,
                     value: indexedDBResourceStore.localResource.value,
-                    version: indexedDBResourceStore.localResource.version,
                     cursors: {}
                 },
                 remoteResource: {
                     metadata: {type: "RESOURCE", version: 1},
-                    version: indexedDBResourceStore.remoteResource.version,
+                    revision: indexedDBResourceStore.remoteResource.revision,
                     value: indexedDBResourceStore.remoteResource.value,
                     cursors: {}
                 },
@@ -131,11 +131,11 @@ export default class IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O> implemen
                 unprocessedChangesets: recordStore.unprocessedChangesets,
                 localResource: {
                     value: recordStore.localResource.value,
-                    version: recordStore.localResource.version
+                    revision: recordStore.localResource.revision
                 },
                 remoteResource: {
                     value: recordStore.remoteResource.value,
-                    version: recordStore.remoteResource.version
+                    revision: recordStore.remoteResource.revision
                 }
             } as IndexedDBResourceStore<V, O>, id);
             request.addEventListener("success", () => resolve());
