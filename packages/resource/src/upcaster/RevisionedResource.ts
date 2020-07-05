@@ -1,31 +1,31 @@
-type RevisionedResourceId_1 = string;
+type VersionResourceId_1 = string;
 
-export type RevisionedResourceId =
-    | RevisionedResourceId_1
+export type VersionedResourceId =
+    | VersionResourceId_1
     ;
 
-type RevisionedClientId_1 = string;
+type VersionedClientId_1 = string;
 
-export type RevisionedClientId =
-    | RevisionedClientId_1
+export type VersionedClientId =
+    | VersionedClientId_1
     ;
 
-type RevisionedResourceRevision_1 = number;
+type VersionedResourceRevision_1 = number;
 
-export type RevisionedResourceRevision =
-    | RevisionedResourceRevision_1
+export type VersionedResourceRevision =
+    | VersionedResourceRevision_1
     ;
 
-type RevisionedResource_1<VV, VS> = {
+type VersionedResource_1<VV, VS> = {
     metadata: {
         type: "RESOURCE";
         version: 1;
     };
-    revision: RevisionedResourceRevision;
+    revision: VersionedResourceRevision;
     value: VV;
     cursors: {[key: string]: VS};
 };
 
-export type RevisionedResource<VV, VS> =
-    | RevisionedResource_1<VV, VS>
+export type VersionedResource<VV, VS> =
+    | VersionedResource_1<VV, VS>
     ;

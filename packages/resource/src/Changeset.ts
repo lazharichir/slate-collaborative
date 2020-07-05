@@ -6,7 +6,7 @@ export type ChangesetId = string;
 export type Changeset<O> = {
     metadata: {type: "CHANGESET"; version: 1;};
     id: ChangesetId;
-    clientId: ClientId;
+    client: ClientId;
     revision: ResourceRevision;
     operations: O[];
 };

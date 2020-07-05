@@ -1,19 +1,19 @@
-import {RevisionedClientId, RevisionedResourceRevision} from "..";
+import {VersionedClientId, VersionedResourceRevision} from "..";
 
-type RevisionedChangesetId_1 = string;
+type VersionedChangesetId_1 = string;
 
-export type RevisionedChangesetId =
-    | RevisionedChangesetId_1
+export type VersionedChangesetId =
+    | VersionedChangesetId_1
     ;
 
-type RevisionedChangeset_1<VO> = {
+type VersionedChangeset_1<VO> = {
     metadata: {type: "CHANGESET"; version: 1;};
-    id: RevisionedChangesetId;
-    clientId: RevisionedClientId;
-    revision: RevisionedResourceRevision;
+    id: VersionedChangesetId;
+    clientId: VersionedClientId;
+    revision: VersionedResourceRevision;
     operations: VO[];
 };
 
-export type RevisionedChangeset<VO> =
-    | RevisionedChangeset_1<VO>
+export type VersionedChangeset<VO> =
+    | VersionedChangeset_1<VO>
     ;
