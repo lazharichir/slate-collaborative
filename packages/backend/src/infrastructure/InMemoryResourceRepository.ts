@@ -5,7 +5,7 @@ import {
     Resource,
     ResourceId,
     resourceUpcaster,
-    ResourceVersion,
+    ResourceRevision,
     VersionedChangeset,
     VersionedResource
 } from "@wleroux/resource";
@@ -15,7 +15,7 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
     private readonly resourceUpcaster: (versionedResource: VersionedResource<VV, VS>) => Resource<V, S>;
     private readonly changesetUpcaster: (versionedChangeset: VersionedChangeset<VO>) => Changeset<O>;
 	private resourceRows: { id: ResourceId, resource: Resource<V, S> }[] = []
-	private resourceChangesetRows: { id: ResourceId, version: number, changeset: Changeset<O> }[] = []
+	private resourceChangesetRows: { id: ResourceId, revision: ResourceRevision, changeset: Changeset<O> }[] = []
 
     constructor(
         valueUpcaster: (versionedValue: VV) => V,
@@ -49,9 +49,9 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
 		this.resourceChangesetRows = this.resourceChangesetRows.filter(row => row.id !== id)
     }
 
-    async *findChangesetsSince(id: ResourceId, version: ResourceVersion): AsyncIterable<Changeset<O>> {
-		this.log(`🧳 InMemoryResourceRepository.findChangesetsSince: `, { id, version }, this.resourceChangesetRows)
-		const changesetsSince = this.resourceChangesetRows.filter((row) => row.id === id && row.version >= version)
+    async *findChangesetsSince(id: ResourceId, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
+		this.log(`🧳 InMemoryResourceRepository.findChangesetsSince: `, { id, revision }, this.resourceChangesetRows)
+		const changesetsSince = this.resourceChangesetRows.filter((row) => row.id === id && row.revision >= revision)
 		for (const item of changesetsSince) {
 			yield this.changesetUpcaster(item.changeset as unknown as VersionedChangeset<VO>);
 		}
@@ -59,10 +59,10 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
 
     async saveChangeset(id: ResourceId, changeset: Changeset<O>): Promise<void> {
 		this.log(`🧳 InMemoryResourceRepository.saveChangeset: `, { id, changeset }, this.resourceChangesetRows)
-		const resourceChangeset = this.resourceChangesetRows.find(row => row.id === id && row.version === changeset.version)
+		const resourceChangeset = this.resourceChangesetRows.find(row => row.id === id && row.revision === changeset.revision)
 		if (resourceChangeset)
 			return
-		this.resourceChangesetRows = this.resourceChangesetRows.concat({ id, version: changeset.version, changeset })
+		this.resourceChangesetRows = this.resourceChangesetRows.concat({ id, revision: changeset.revision, changeset })
 	}
 	
 	private log(...args: any[]) {

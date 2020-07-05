@@ -1,5 +1,5 @@
 import ResourceRepository from "./ResourceRepository";
-import {Changeset, changesetsTransformer, Resource, ResourceId, resourceReducer, ResourceVersion} from "@wleroux/resource";
+import {Changeset, changesetsTransformer, Resource, ResourceId, resourceReducer, ResourceRevision} from "@wleroux/resource";
 
 export default class ResourceService<V, S, O> {
     private readonly resourceRepository: ResourceRepository<V, S, O>
@@ -20,8 +20,8 @@ export default class ResourceService<V, S, O> {
         return this.resourceRepository.findResource(id);
     }
 
-    findChangesetsSince(id: ResourceId, version: ResourceVersion): AsyncIterable<Changeset<O>> {
-        return this.resourceRepository.findChangesetsSince(id, version);
+    findChangesetsSince(id: ResourceId, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
+        return this.resourceRepository.findChangesetsSince(id, revision);
     }
 
     async applyChangeset(id: ResourceId, changeset: Changeset<O>): Promise<Changeset<O> | null> {
@@ -30,8 +30,8 @@ export default class ResourceService<V, S, O> {
             try {
                 let transformedChangeset = changeset;
                 let resource = await this.resourceRepository.findResource(id);
-                if (resource.version + 1 !== changeset.version) {
-                    for await (const appliedChangeset of this.resourceRepository.findChangesetsSince(id, transformedChangeset.version)) {
+                if (resource.revision + 1 !== changeset.revision) {
+                    for await (const appliedChangeset of this.resourceRepository.findChangesetsSince(id, transformedChangeset.revision)) {
                         if (appliedChangeset.id === transformedChangeset.id) {
                             return null; // already applied
                         }

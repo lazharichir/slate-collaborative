@@ -27,7 +27,7 @@ export default class RequestHandler<VV, V, VS, S, VO, O> {
             if (request.since === "latest") {
                 let resource = await this.resourceService.findResource(request.id);
                 await this.connectionService.send(connectionId, {type: "resource_loaded", id: request.id, resource});
-                since = resource.version;
+                since = resource.revision;
             } else {
                 since = request.since;
             }

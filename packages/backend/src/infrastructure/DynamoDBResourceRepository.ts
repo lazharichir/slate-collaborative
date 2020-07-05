@@ -7,7 +7,7 @@ import {
     Resource,
     ResourceId,
     resourceUpcaster,
-    ResourceVersion,
+    ResourceRevision,
     VersionedChangeset,
     VersionedResource
 } from "@wleroux/resource";
@@ -65,14 +65,14 @@ export default class DynamoDBResourceRepository<VV, V, VS, S, VO, O> implements 
         }).promise().then(() => {});
     }
 
-    async *findChangesetsSince(id: ResourceId, version: ResourceVersion): AsyncIterable<Changeset<O>> {
+    async *findChangesetsSince(id: ResourceId, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
         let queryParams: QueryInput = {
             TableName: this.resourceChangesetTableName,
             ConsistentRead: true,
-            KeyConditionExpression: "id = :id AND version >= :version",
+            KeyConditionExpression: "id = :id AND revision >= :revision",
             ExpressionAttributeValues: {
                 ":id": id,
-                ":version": version
+                ":revision": revision
             },
             ProjectionExpression: "changeset"
         };
@@ -98,10 +98,10 @@ export default class DynamoDBResourceRepository<VV, V, VS, S, VO, O> implements 
             TableName: this.resourceChangesetTableName,
             Item: {
                 id: id,
-                version: changeset.version,
+                revision: changeset.revision,
                 changeset
             },
-            ConditionExpression: "attribute_not_exists(id) AND attribute_not_exists(version)"
+            ConditionExpression: "attribute_not_exists(id) AND attribute_not_exists(revision)"
         }).promise().then(() => {});
     }
 }
