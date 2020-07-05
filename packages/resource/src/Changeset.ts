@@ -1,4 +1,4 @@
-import {ResourceVersion} from "./Resource";
+import {ResourceRevision} from "./Resource";
 import {ClientId} from "./ClientId";
 
 export type ChangesetId = string;
@@ -7,7 +7,7 @@ export type Changeset<O> = {
     metadata: {type: "CHANGESET"; version: 1;};
     id: ChangesetId;
     clientId: ClientId;
-    version: ResourceVersion;
+    revision: ResourceRevision;
     operations: O[];
 };
 

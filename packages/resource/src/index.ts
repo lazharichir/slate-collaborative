@@ -1,14 +1,14 @@
 export {ClientId} from "./ClientId";
-export {VersionedClientId} from "./upcaster/VersionedResource"
+export {RevisionedClientId} from "./upcaster/RevisionedResource"
 
-export {Resource, ResourceId, ResourceVersion} from "./Resource";
+export {Resource, ResourceId, ResourceRevision} from "./Resource";
 export {resourceUpcaster} from "./upcaster/resourceUpcaster";
 export {resourceReducer} from "./reducer/resourceReducer";
-export {VersionedResource, VersionedResourceId, VersionedResourceVersion} from "./upcaster/VersionedResource";
+export {RevisionedResource, RevisionedResourceId, RevisionedResourceRevision} from "./upcaster/RevisionedResource";
 
 export {Changeset, ChangesetId} from "./Changeset";
 export {changesetsTransformer} from "./transformer/changesetsTransformer";
 export {changesetInverter} from "./inverter/changesetInverter";
 export {changesetUpcaster} from "./upcaster/changesetUpcaster";
 export {changesetsOptimizer} from "./optimizer/changesetsOptimizer";
-export {VersionedChangeset, VersionedChangesetId} from "./upcaster/VersionedChangeset";
+export {RevisionedChangeset, RevisionedChangesetId} from "./upcaster/RevisionedChangeset";
