@@ -6,7 +6,7 @@ import {
     Resource,
     ResourceId,
     resourceUpcaster,
-    ResourceVersion,
+    ResourceRevision,
     VersionedChangeset,
     VersionedResource
 } from "@wleroux/resource";
@@ -17,7 +17,7 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
     private readonly resourceUpcaster: (versionedResource: VersionedResource<VV, VS>) => Resource<V, S>;
     private readonly changesetUpcaster: (versionedChangeset: VersionedChangeset<VO>) => Changeset<O>;
 	private resourceRows: { id: ResourceId, resource: Resource<V, S> }[] = []
-	private resourceChangesetRows: { id: ResourceId, version: number, changeset: Changeset<O> }[] = []
+	private resourceChangesetRows: { id: ResourceId, revision: ResourceRevision, changeset: Changeset<O> }[] = []
 
     constructor(
 		knex: Knex,
@@ -53,9 +53,9 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
 		this.resourceChangesetRows = this.resourceChangesetRows.filter(row => row.id !== id)
     }
 
-    async *findChangesetsSince(id: ResourceId, version: ResourceVersion): AsyncIterable<Changeset<O>> {
-		this.log(`🧳 PgResourceRepository.findChangesetsSince: `, { id, version }, this.resourceChangesetRows)
-		const changesetsSince = this.resourceChangesetRows.filter((row) => row.id === id && row.version >= version)
+    async *findChangesetsSince(id: ResourceId, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
+		this.log(`🧳 PgResourceRepository.findChangesetsSince: `, { id, revision }, this.resourceChangesetRows)
+		const changesetsSince = this.resourceChangesetRows.filter((row) => row.id === id && row.revision >= revision)
 		for (const item of changesetsSince) {
 			yield this.changesetUpcaster(item.changeset as unknown as VersionedChangeset<VO>);
 		}
@@ -63,10 +63,10 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
 
     async saveChangeset(id: ResourceId, changeset: Changeset<O>): Promise<void> {
 		this.log(`🧳 PgResourceRepository.saveChangeset: `, { id, changeset }, this.resourceChangesetRows)
-		const resourceChangeset = this.resourceChangesetRows.find(row => row.id === id && row.version === changeset.version)
+		const resourceChangeset = this.resourceChangesetRows.find(row => row.id === id && row.revision === changeset.revision)
 		if (resourceChangeset)
 			return
-		this.resourceChangesetRows = this.resourceChangesetRows.concat({ id, version: changeset.version, changeset })
+		this.resourceChangesetRows = this.resourceChangesetRows.concat({ id, revision: changeset.revision, changeset })
 	}
 	
 	private log(...args: any[]) {

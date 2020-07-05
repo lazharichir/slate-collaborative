@@ -38,7 +38,7 @@ type RichTextEditorProps = {
 }
 
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
-	let { value, selection, cursors, version, apply, undo, redo } = useSlateResource(props.resourceId, props.clientId);
+	let { value, selection, cursors, revision, apply, undo, redo } = useSlateResource(props.resourceId, props.clientId);
 	const cursorsDecoration = useCursorsDecorator(cursors);
 	const editor = useMemo(() => withUndoRedo(withReact(createEditor()), undo, redo), [undo, redo])
 	let changeHandler = useCallback(() => apply(editor.operations as SlateOperation[]), [editor, apply]);
@@ -46,7 +46,7 @@ export default function CollaborativeRichTextEditor(props: RichTextEditorProps) 
 	let renderLeaf = useCallback((props) => Leaf(props), [cursorsDecoration]);
 	return (
 		<Slate key={props.resourceId + props.clientId} editor={editor} selection={selection} value={value.children} onChange={changeHandler}>
-			Version: {version}
+			Revision: {revision}
 			<Toolbar>
 				<MarkButton format="bold" icon="format_bold" />
 				<MarkButton format="italic" icon="format_italic" />

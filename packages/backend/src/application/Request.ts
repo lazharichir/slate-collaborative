@@ -1,9 +1,9 @@
-import {VersionedChangeset, VersionedResourceId, VersionedResourceVersion} from "@wleroux/resource";
+import {VersionedChangeset, VersionedResourceId, VersionedResourceRevision} from "@wleroux/resource";
 
 type SUBSCRIBE_TO_RECORD<VV> = {
     type: "subscribe";
     id: VersionedResourceId;
-    since: "latest" | VersionedResourceVersion
+    since: "latest" | VersionedResourceRevision
 };
 
 type UNSUBSCRIBE_FROM_RECORD = {
