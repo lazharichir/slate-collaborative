@@ -9,7 +9,7 @@ export type VersionedChangesetId =
 type VersionedChangeset_1<VO> = {
     metadata: {type: "CHANGESET"; version: 1;};
     id: VersionedChangesetId;
-    clientId: VersionedClientId;
+    client: VersionedClientId;
     revision: VersionedResourceRevision;
     operations: VO[];
 };
