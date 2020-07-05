@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useCallback, useMemo, useContext, useEffect, useState } from 'react'
+import React, { KeyboardEvent, useCallback, useMemo } from 'react'
 import isHotkey from 'is-hotkey'
 import { Editable, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact } from 'slate-react'
 import { createEditor, Editor, Transforms } from 'slate'
@@ -9,7 +9,7 @@ import Caret from "./Caret";
 import Button from "./Button";
 import Icon from "./Icon";
 import Toolbar from "./Toolbar";
-import { ClientId, ResourceId } from "@wleroux/resource";
+import { ClientId, ResourceId, ResourceVersion } from "@wleroux/resource";
 
 const HOTKEYS: { [key: string]: Format } = {
 	'mod+b': 'bold',
@@ -34,11 +34,13 @@ const LIST_TYPES = ['numbered-list', 'bulleted-list']
 
 type RichTextEditorProps = {
 	clientId: ClientId,
-	resourceId: ResourceId
+	resourceId: ResourceId,
+	resourceVersion: ResourceVersion,
+	bufferFor?: number,
 }
 
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
-	let { value, selection, cursors, revision, apply, undo, redo } = useSlateResource(props.resourceId, props.clientId);
+	let { value, selection, cursors, revision, apply, undo, redo } = useSlateResource(props.resourceId, props.resourceVersion, props.clientId);
 	const cursorsDecoration = useCursorsDecorator(cursors);
 	const editor = useMemo(() => withUndoRedo(withReact(createEditor()), undo, redo), [undo, redo])
 	let changeHandler = useCallback(() => apply(editor.operations as SlateOperation[]), [editor, apply]);

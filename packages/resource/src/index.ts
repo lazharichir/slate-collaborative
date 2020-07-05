@@ -4,7 +4,7 @@ export {VersionedClientId} from "./upcaster/RevisionedResource"
 export {Resource, ResourceId, ResourceVersion, ResourceRevision} from "./Resource";
 export {resourceUpcaster} from "./upcaster/resourceUpcaster";
 export {resourceReducer} from "./reducer/resourceReducer";
-export {VersionedResource, VersionedResourceId, VersionedResourceRevision} from "./upcaster/RevisionedResource";
+export {VersionedResource, VersionedResourceId, VersionedResourceVersion, VersionedResourceRevision} from "./upcaster/RevisionedResource";
 
 export {Changeset, ChangesetId} from "./Changeset";
 export {changesetsTransformer} from "./transformer/changesetsTransformer";

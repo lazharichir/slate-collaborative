@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ResourceRepository from "../domain/ResourceRepository";
 import {DynamoDB} from "aws-sdk";
 import {DocumentClient} from "aws-sdk/lib/dynamodb/document_client";

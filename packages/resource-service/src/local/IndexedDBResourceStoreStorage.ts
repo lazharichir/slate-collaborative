@@ -2,7 +2,8 @@ import {openResourcesIndexedDB} from "./openResourcesIndexedDB";
 import {
     Changeset,
     changesetUpcaster,
-    ResourceId,
+	ResourceId,
+	ResourceVersion,
     ResourceRevision,
     VersionedChangeset,
     VersionedResourceRevision
@@ -84,13 +85,13 @@ export default class IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O> implemen
         this.database = openResourcesIndexedDB();
     }
 
-    async find(id: ResourceId): Promise<ResourceStore<V, S, O>> {
+    async find(id: ResourceId, version: ResourceVersion): Promise<ResourceStore<V, S, O>> {
         let db = await this.database;
         let tx = db.transaction("RESOURCE_STORES", "readonly");
         let recordsObjectStore = tx.objectStore("RESOURCE_STORES");
 
         let result = await new Promise(((resolve, reject) => {
-            let request = recordsObjectStore.get(id);
+            let request = recordsObjectStore.get(`${id}/${version}`);
             request.addEventListener("success", () => resolve(request.result));
             request.addEventListener("error", (event) => reject(event));
         })) as (VersionedIndexedDBResourceStore<VV, VO> | undefined);
@@ -120,7 +121,7 @@ export default class IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O> implemen
         }
     }
 
-    async save(id: ResourceId, recordStore: ResourceStore<V, S, O>): Promise<void> {
+    async save(id: ResourceId, version: ResourceVersion, recordStore: ResourceStore<V, S, O>): Promise<void> {
         let db = await this.database;
         let tx = db.transaction("RESOURCE_STORES", "readwrite");
         let recordsObjectStore = tx.objectStore("RESOURCE_STORES");
@@ -137,7 +138,7 @@ export default class IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O> implemen
                     value: recordStore.remoteResource.value,
                     revision: recordStore.remoteResource.revision
                 }
-            } as IndexedDBResourceStore<V, O>, id);
+            } as IndexedDBResourceStore<V, O>, `${id}/${version}`);
             request.addEventListener("success", () => resolve());
             request.addEventListener("error", (event) => reject(event));
         });
