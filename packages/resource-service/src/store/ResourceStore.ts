@@ -14,14 +14,14 @@ function defaultResourceStore<V, S, O>(defaultValue: V): ResourceStore<V, S, O> 
     return ({
         remoteResource: {
             metadata: {type: "RESOURCE", version: 1},
-            version: 0,
+            revision: 0,
             value: defaultValue,
             cursors: {}
         },
         unprocessedChangesets: [],
         localResource: {
             metadata: {type: "RESOURCE", version: 1},
-            version: 0,
+            revision: 0,
             value: defaultValue,
             cursors: {}
         },

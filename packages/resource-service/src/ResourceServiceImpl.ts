@@ -100,7 +100,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         this.websocket.send({
             type: "subscribe",
             id: id,
-            since: remoteResource.version === 0 ? "latest" : remoteResource.version + 1
+            since: remoteResource.revision === 0 ? "latest" : remoteResource.revision + 1
         });
         this.resendInProgressChangeset(id);
         this.sendOutstandingChangesets(id);
@@ -137,7 +137,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
                 metadata: {type: "CHANGESET", version: 1},
                 id: randomUUID(),
                 clientId: outstandingChangesets[0].clientId,
-                version: remoteResource.version + 1,
+                revision: remoteResource.revision + 1,
                 operations: outstandingOperations
             }])[0];
 

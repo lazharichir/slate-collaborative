@@ -1,9 +1,9 @@
-import {Changeset, ResourceId, ResourceVersion} from "@wleroux/resource";
+import {Changeset, ResourceId, ResourceRevision} from "@wleroux/resource";
 
 type SUBSCRIBE_TO_RESOURCE<V> = {
     type: "subscribe";
     id: ResourceId;
-    since: "latest" | ResourceVersion
+    since: "latest" | ResourceRevision
 };
 
 

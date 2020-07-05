@@ -13,21 +13,21 @@ describe("Resource Store Reducer", () => {
             type: "load_remote_resource",
             resource: {
                 metadata: {type: "RESOURCE", version: 1},
-                version: 1,
+                revision: 1,
                 cursors: {},
                 value: 1
             }
         })).toEqual({
             remoteResource: {
                 metadata: {type: "RESOURCE", version: 1},
-                version: 1,
+                revision: 1,
                 cursors: {},
                 value: 1
             },
             unprocessedChangesets: [],
             localResource: {
                 metadata: {type: "RESOURCE", version: 1},
-                version: 1,
+                revision: 1,
                 cursors: {},
                 value: 1
             },
