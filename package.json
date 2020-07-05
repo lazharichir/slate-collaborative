@@ -1,0 +1,25 @@
+{
+  "name": "slate-collaborative",
+  "version": "1.0.0",
+  "description": "# Collaborative Value Types",
+  "main": "index.js",
+  "scripts": {
+	"build:resource": "cd packages/resource && npm install && npm run build",
+	"build:slate-value": "cd packages/slate-value && npm install && npm run build",
+	"build:resource-service": "cd packages/resource-service && npm install && npm run build",
+	"build:slate-react-resource": "cd packages/slate-react-resource && npm install && npm run build",
+    "buildall": "npm run build:resource && npm run build:slate-value && npm run build:resource-service && npm run build:slate-react-resource",
+    "b": "npm run build:resource",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lazharichir/slate-collaborative.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lazharichir/slate-collaborative/issues"
+  },
+  "homepage": "https://github.com/lazharichir/slate-collaborative#readme"
+}

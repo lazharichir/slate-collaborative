@@ -19,7 +19,7 @@ function defaultResourceStore<V, S, O>(defaultValue: V): ResourceStore<V, S, O> 
             cursors: {}
         },
         unprocessedChangesets: [],
-            localResource: {
+        localResource: {
             metadata: {type: "RESOURCE", version: 1},
             version: 0,
             value: defaultValue,

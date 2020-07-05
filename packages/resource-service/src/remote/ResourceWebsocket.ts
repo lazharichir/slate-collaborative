@@ -9,7 +9,7 @@ export default class ResourceWebsocket<V, S, O> {
 
     constructor(webSocketUrl: string) {
         this.websocket = new WebSocket(webSocketUrl);
-
+		console.log(`One websocket opened to "${webSocketUrl}"`)
         // prevent idle connection timeouts
         setInterval(() => {
             this.send({type: "keep_alive"});

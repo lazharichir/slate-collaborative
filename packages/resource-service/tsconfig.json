@@ -6,8 +6,8 @@
       "dom"
     ],
     "incremental": true,
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": "./",
+    "outDir": "./dist",
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,6 +16,6 @@
     "module": "CommonJS",
     "moduleResolution": "Node"
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": ["./src"],
+  "exclude": ["./src/**/*.spec.ts"]
 }

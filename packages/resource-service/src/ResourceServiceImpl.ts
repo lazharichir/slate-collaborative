@@ -87,7 +87,6 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 
     private broadcast(id: ResourceId) {
         if (this.subscribers[id] === null) return;
-
         this.subscribers[id].forEach(subscriber => subscriber(this.resourceStores[id].localResource));
     }
 
@@ -178,7 +177,8 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         if (!this.websocketUrl) return;
         if (this.websocket) return;
 
-        this.websocket = new ResourceWebsocket<V, S, O>(this.websocketUrl);
+		this.websocket = new ResourceWebsocket<V, S, O>(this.websocketUrl);
+		
         this.websocket.subscribe(response => {
             if (response.type === "resource_loaded") {
                 let {id, resource} = response;

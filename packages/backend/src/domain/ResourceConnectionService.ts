@@ -22,16 +22,17 @@ export default class ResourceConnectionService<V, S, O> {
     }
 
     async broadcast(id: ResourceId, response: Response<V, S, O>, excludeConnectionId?: ConnectionId): Promise<void> {
-        let connections = (await this.resourceConnectionRepository.findConnectionsByResourceId(id))
-            .filter(connectionId => connectionId !== excludeConnectionId);
-        await Promise.all(connections.map(resourceConnectionId =>
-            this.connectionService.send(resourceConnectionId, response).catch(e => {
-                if (e.statusCode === 410) {
-                    return this.resourceConnectionRepository.removeConnection(id, resourceConnectionId)
-                } else {
-                    throw e;
-                }
-            })
-        ));
+		let connections = (await this.resourceConnectionRepository.findConnectionsByResourceId(id))
+			.filter(connectionId => connectionId !== excludeConnectionId);
+		console.log(`📡 Broadcasting`, { id, response, excludeConnectionId }, connections)
+		await Promise.all(connections.map(resourceConnectionId => {
+			try {
+				return this.connectionService.send(resourceConnectionId, response)
+			} catch (e) {
+				console.error(`broadcast error: `, e)
+				return this.resourceConnectionRepository.removeConnection(id, resourceConnectionId)
+				// throw e;
+			}
+		}));
     }
 }
