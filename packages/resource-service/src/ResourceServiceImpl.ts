@@ -68,14 +68,14 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         };
     }
 
-    async applyOperations(id: ResourceId, clientId: ClientId, operations: O[]) {
+    async applyOperations(id: ResourceId, client: ClientId, operations: O[]) {
         if (this.resourceStores[id] === undefined) {
             this.resourceStores[id] = await this.resourceStoreStorage.find(id)
         }
 
         this.resourceStores[id] = this.reducer(this.resourceStores[id], {
             type: "apply_local_operations",
-            clientId,
+            client,
             operations
         });
 
@@ -136,7 +136,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
             let inProgressChangeset: Changeset<O> = this.optimizer([{
                 metadata: {type: "CHANGESET", version: 1},
                 id: randomUUID(),
-                clientId: outstandingChangesets[0].clientId,
+                client: outstandingChangesets[0].client,
                 revision: remoteResource.revision + 1,
                 operations: outstandingOperations
             }])[0];
@@ -150,11 +150,11 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         }
     }
 
-    async applyRedo(id: ResourceId, clientId: ClientId): Promise<void> {
+    async applyRedo(id: ResourceId, client: ClientId): Promise<void> {
         if (this.resourceStores[id] === undefined) {
             this.resourceStores[id] = await this.resourceStoreStorage.find(id)
         }
-        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_redo", clientId});
+        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_redo", client});
 
         this.sendOutstandingChangesets(id);
 
@@ -162,11 +162,11 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         await this.resourceStoreStorage.save(id, this.resourceStores[id]);
     }
 
-    async applyUndo(id: ResourceId, clientId: ClientId): Promise<void> {
+    async applyUndo(id: ResourceId, client: ClientId): Promise<void> {
         if (this.resourceStores[id] === undefined) {
             this.resourceStores[id] = await this.resourceStoreStorage.find(id)
         }
-        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_undo", clientId});
+        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_undo", client});
         this.sendOutstandingChangesets(id);
 
         this.broadcast(id);
