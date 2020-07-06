@@ -7,59 +7,68 @@ import {webSocketUrl} from "./config";
 
 function App() {
 
-    let [clientId, setClientId] = useState<ClientId>(() => {
-        let storedClientId = localStorage.getItem("clientId");
-        if (storedClientId === null) {
-            let clientId = randomUUID();
-            localStorage.setItem("clientId", clientId);
-            return clientId;
-        } else {
-            return storedClientId;
-        }
-	});
-	
-    let handleClientIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        localStorage.setItem("clientId", event.target.value);
-        setClientId(event.target.value);
-    }, [setClientId]);
+	const params = new URLSearchParams(window.location.search)
 
-    let [resourceId, setResourceId] = useState<ResourceId>(() => {
-        let storedResourceId = localStorage.getItem("resourceId");
-        if (storedResourceId === null) {
-            let resourceId = randomUUID();
-            localStorage.setItem("resourceId", resourceId);
-            return resourceId;
-        } else {
-            return storedResourceId;
-        }
-	});
+	const clientId = params.get(`client`)
+	const resourceId = params.get(`resourceId`)
+	const resourceVersion = params.get(`resourceVersion`)
 
-	let [resourceVersion, setResourceVersion] = useState<ResourceVersion>(() => {
-        let storedResourceVersion = localStorage.getItem("resourceVersion");
-        if (storedResourceVersion === null) {
-            let resourceVersion = randomUUID();
-            localStorage.setItem("resourceVersion", resourceVersion);
-            return resourceVersion;
-        } else {
-            return storedResourceVersion;
-        }
-	});
+    // let [clientId, setClientId] = useState<ClientId>(() => {
+    //     let storedClientId = localStorage.getItem("clientId");
+    //     if (storedClientId === null) {
+    //         let clientId = randomUUID();
+    //         localStorage.setItem("clientId", clientId);
+    //         return clientId;
+    //     } else {
+    //         return storedClientId;
+    //     }
+	// });
 	
-    let handleResourceIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        localStorage.setItem("resourceId", event.target.value);
-        setResourceId(event.target.value);
-	}, [setResourceId]);
+    // let handleClientIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    //     localStorage.setItem("clientId", event.target.value);
+    //     setClientId(event.target.value);
+    // }, [setClientId]);
+
+    // let [resourceId, setResourceId] = useState<ResourceId>(() => {
+    //     let storedResourceId = localStorage.getItem("resourceId");
+    //     if (storedResourceId === null) {
+    //         let resourceId = randomUUID();
+    //         localStorage.setItem("resourceId", resourceId);
+    //         return resourceId;
+    //     } else {
+    //         return storedResourceId;
+    //     }
+	// });
+
+	// let [resourceVersion, setResourceVersion] = useState<ResourceVersion>(() => {
+    //     let storedResourceVersion = localStorage.getItem("resourceVersion");
+    //     if (storedResourceVersion === null) {
+    //         let resourceVersion = randomUUID();
+    //         localStorage.setItem("resourceVersion", resourceVersion);
+    //         return resourceVersion;
+    //     } else {
+    //         return storedResourceVersion;
+    //     }
+	// });
 	
-	let handleResourceVersionChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        localStorage.setItem("resourceVersion", event.target.value);
-        setResourceVersion(event.target.value);
-    }, [setResourceVersion]);
+    // let handleResourceIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    //     localStorage.setItem("resourceId", event.target.value);
+    //     setResourceId(event.target.value);
+	// }, [setResourceId]);
+	
+	// let handleResourceVersionChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    //     localStorage.setItem("resourceVersion", event.target.value);
+    //     setResourceVersion(event.target.value);
+	// }, [setResourceVersion]);
+	
+	if (!clientId || !resourceId || !resourceVersion)	
+		return <div>No data in the query string.</div>;
 
     return (
     <div className="App">
         <SlateResourceServiceContext.Provider value={slateResourceService(webSocketUrl)}>
 
-            <div>
+            {/* <div>
                 <label>Client ID:</label>
                 <input value={clientId} onChange={handleClientIdChange} />
             </div>
@@ -72,7 +81,7 @@ function App() {
 			<div>
                 <label>Resource Version:</label>
                 <input value={resourceVersion} onChange={handleResourceVersionChange} />
-            </div>
+            </div> */}
 
             <CollaborativeRichTextEditor resourceId={resourceId} resourceVersion={resourceVersion} bufferFor={2000} clientId={clientId} />
 
