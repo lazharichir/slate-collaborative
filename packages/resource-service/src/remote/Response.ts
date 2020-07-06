@@ -1,14 +1,16 @@
-import {Changeset, Resource, ResourceId} from "@wleroux/resource";
+import {Changeset, Resource, ResourceId, ResourceVersion} from "@wleroux/resource";
 
 type RESOURCE_LOADED<V, S> = {
     type: "resource_loaded";
-    id: ResourceId;
+	id: ResourceId;
+	version: ResourceVersion
     resource: Resource<V, S>;
 };
 
 type CHANGESET_APPLIED<O> = {
     type: "changeset_applied";
-    id: ResourceId;
+	id: ResourceId;
+	version: ResourceVersion
     changeset: Changeset<O>;
 };
 

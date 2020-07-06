@@ -120,7 +120,8 @@ export async function handler(
 				await Promise.all(
 					resourceIds.map((resourceId) =>
 						resourceConnectionRepository.removeConnection(
-							resourceId,
+							resourceId.id,
+							resourceId.version,
 							connectionId
 						)
 					)

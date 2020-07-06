@@ -2,6 +2,12 @@ type VersionResourceId_1 = string;
 
 export type VersionedResourceId =
     | VersionResourceId_1
+	;
+	
+type VersionResourceVersion_1 = string;
+
+export type VersionedResourceVersion =
+    | VersionResourceVersion_1
     ;
 
 type VersionedClientId_1 = string;

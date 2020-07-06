@@ -8,6 +8,7 @@ import {
 	ClientId,
 	Resource,
 	ResourceId,
+	ResourceVersion,
 	ResourceRevision,
 } from "@wleroux/resource"
 import { ResourceService } from "@wleroux/resource-service"
@@ -23,56 +24,60 @@ type ResourceContext = {
 	redo: () => void
 }
 
-// export function useSlateResource( id: ResourceId, clientId: ClientId, react: { useContext: typeof useContext useState: typeof useState useEffect: typeof useEffect useCallback: typeof useCallback useMemo: typeof useMemo } ): ResourceContext {
-
 export function useSlateResource(
 	id: ResourceId,
-	clientId: ClientId,
+	version: ResourceVersion,
+	client: ClientId
 ): ResourceContext {
+
 	let resourceService = React.useContext<
 		ResourceService<SlateValue, SlateSelection, SlateOperation>
 	>(SlateResourceServiceContext)
+
 	let [resource, setResource] = React.useState<
 		Resource<SlateValue, SlateSelection>
 	>(Resource.DEFAULT(SlateValue.DEFAULT))
+
 	React.useEffect(() => {
 		return () => {
 			setResource(Resource.DEFAULT(SlateValue.DEFAULT))
 		}
-	}, [setResource, id])
+	}, [setResource, id, version])
 
 	React.useEffect(() => {
-		let closePromise = resourceService.subscribe(id, setResource)
+		let closePromise = resourceService.subscribe(id, version, setResource)
 		return () => {
 			closePromise.then((close) => close())
 		}
-	}, [resourceService, setResource, id])
+	}, [resourceService, setResource, id, version])
 
 	let apply = React.useCallback(
 		(operations: SlateOperation[]) =>
-			resourceService.applyOperations(id, clientId, operations),
-		[resourceService, id, clientId]
+			resourceService.applyOperations(id, version, client, operations),
+		[resourceService, id, version, client]
 	)
-	let undo = React.useCallback(() => resourceService.applyUndo(id, clientId), [
+	let undo = React.useCallback(() => resourceService.applyUndo(id, version, client), [
 		resourceService,
 		id,
-		clientId,
+		version,
+		client,
 	])
-	let redo = React.useCallback(() => resourceService.applyRedo(id, clientId), [
+	let redo = React.useCallback(() => resourceService.applyRedo(id, version, client), [
 		resourceService,
 		id,
-		clientId,
+		version,
+		client,
 	])
 
-	let selection = React.useMemo(() => resource.cursors[clientId] || null, [
+	let selection = React.useMemo(() => resource.cursors[client] || null, [
 		resource.cursors,
-		clientId,
+		client,
 	])
 	let cursors = React.useMemo(() => {
 		let otherCursors = { ...resource.cursors }
-		delete otherCursors[clientId]
+		delete otherCursors[client]
 		return otherCursors
-	}, [resource.cursors, clientId])
+	}, [resource.cursors, client])
 
 	return {
 		value: resource.value,

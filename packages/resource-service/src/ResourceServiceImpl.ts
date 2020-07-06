@@ -1,5 +1,5 @@
 import {resourceStoreReducer} from "./store/resourceStoreReducer";
-import {Changeset, changesetsOptimizer, ClientId, Resource, ResourceId} from "@wleroux/resource";
+import {Changeset, changesetsOptimizer, ClientId, Resource, ResourceId, ResourceVersion} from "@wleroux/resource";
 import {randomUUID} from "./util/randomUUID";
 import {ResourceStoreAction} from "./store/ResourceStoreAction";
 import {ResourceService} from "./ResourceService";
@@ -9,6 +9,7 @@ import ResourceWebsocket from "./remote/ResourceWebsocket";
 import IndexedDBResourceStoreStorage from "./local/IndexedDBResourceStoreStorage";
 import {Subscriber} from "./Subscriber";
 import {Subscription} from "./Subscription";
+import { version } from "process";
 
 export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService<V, S, O> {
     private readonly resourceStoreStorage: ResourceStoreStorage<V, S, O>;
@@ -45,88 +46,98 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         window.addEventListener("offline", () => this.disconnect());
     }
 
-    async subscribe(id: ResourceId, subscriber: Subscriber<Resource<V, S>>): Promise<Subscription> {
-        if (this.resourceStores[id] === undefined) {
-            this.resourceStores[id] = await this.resourceStoreStorage.find(id)
+    async subscribe(id: ResourceId, version: ResourceVersion, subscriber: Subscriber<Resource<V, S>>): Promise<Subscription> {
+
+		const identifier = `${id}/${version}`
+
+        if (this.resourceStores[identifier] === undefined) {
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
         }
 
-        subscriber(this.resourceStores[id].localResource);
-        if (this.subscribers[id] === undefined) {
-            this.subscribers[id] = [];
+        subscriber(this.resourceStores[identifier].localResource);
+        if (this.subscribers[identifier] === undefined) {
+            this.subscribers[identifier] = [];
         }
 
-        if (this.subscribers[id].length === 0) {
-            await this.requestSubscriptionToResource(id);
+        if (this.subscribers[identifier].length === 0) {
+            await this.requestSubscriptionToResource(id, version);
         }
 
-        this.subscribers[id] = [...this.subscribers[id], subscriber];
+        this.subscribers[identifier] = [...this.subscribers[identifier], subscriber];
         return () => {
-            this.subscribers[id] = this.subscribers[id].filter(s => s !== subscriber);
-            if (this.subscribers[id].length === 0) {
-                this.requestUnsubscribeFromResource(id);
+            this.subscribers[identifier] = this.subscribers[identifier].filter(s => s !== subscriber);
+            if (this.subscribers[identifier].length === 0) {
+                this.requestUnsubscribeFromResource(id, version);
             }
         };
     }
 
-    async applyOperations(id: ResourceId, client: ClientId, operations: O[]) {
-        if (this.resourceStores[id] === undefined) {
-            this.resourceStores[id] = await this.resourceStoreStorage.find(id)
+    async applyOperations(id: ResourceId, version: ResourceVersion, client: ClientId, operations: O[]) {
+
+		const identifier = `${id}/${version}`
+        if (!this.resourceStores[identifier]) {
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
         }
 
-        this.resourceStores[id] = this.reducer(this.resourceStores[id], {
+        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
             type: "apply_local_operations",
             client,
             operations
         });
 
-        this.sendOutstandingChangesets(id);
+        this.sendOutstandingChangesets(id, version);
 
-        this.broadcast(id);
-        await this.resourceStoreStorage.save(id, this.resourceStores[id]);
+        this.broadcast(id, version);
+        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
     }
 
-    private broadcast(id: ResourceId) {
-        if (this.subscribers[id] === null) return;
-        this.subscribers[id].forEach(subscriber => subscriber(this.resourceStores[id].localResource));
+    private broadcast(id: ResourceId, version: ResourceVersion) {
+		const identifier = `${id}/${version}`
+        if (!this.subscribers[identifier]) return;
+        this.subscribers[identifier].forEach(subscriber => subscriber(this.resourceStores[identifier].localResource));
     }
 
-    private async requestSubscriptionToResource(id: ResourceId) {
-        if (!this.websocket) return;
-        if (this.resourceStores[id] === undefined) {
-            this.resourceStores[id] = await this.resourceStoreStorage.find(id);
+    private async requestSubscriptionToResource(id: ResourceId, version: ResourceVersion) {
+		if (!this.websocket) return;
+		const identifier = `${id}/${version}`
+        if (!this.resourceStores[identifier]) {
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version);
         }
 
-        let {remoteResource} = this.resourceStores[id];
+        let {remoteResource} = this.resourceStores[identifier];
         this.websocket.send({
             type: "subscribe",
-            id: id,
+			id: id,
+			version: version,
             since: remoteResource.revision === 0 ? "latest" : remoteResource.revision + 1
         });
-        this.resendInProgressChangeset(id);
-        this.sendOutstandingChangesets(id);
+        this.resendInProgressChangeset(id, version);
+        this.sendOutstandingChangesets(id, version);
 
-        await this.resourceStoreStorage.save(id, this.resourceStores[id]);
+        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
     }
 
-    private requestUnsubscribeFromResource(id: ResourceId) {
+    private requestUnsubscribeFromResource(id: ResourceId, version: ResourceVersion) {
         if (!this.websocket) return;
-        this.websocket.send({type: "unsubscribe", id});
+        this.websocket.send({type: "unsubscribe", id, version});
     }
 
-    private resendInProgressChangeset(id: ResourceId) {
-        if (!this.websocket) return;
-        if (this.resourceStores[id] === null) return;
+    private resendInProgressChangeset(id: ResourceId, version: ResourceVersion) {
+		const identifier = `${id}/${version}`
+		if (!this.websocket) return;
+        if (!this.resourceStores[identifier]) return;
 
-        let {inProgressChangeset} = this.resourceStores[id];
+        let {inProgressChangeset} = this.resourceStores[identifier];
         if (inProgressChangeset !== null) {
-            this.websocket.send({type: "apply_changeset", id, changeset: inProgressChangeset});
+            this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
         }
     }
 
-    private sendOutstandingChangesets(id: ResourceId) {
+    private sendOutstandingChangesets(id: ResourceId, version: ResourceVersion) {
+		const identifier = `${id}/${version}`
         if (!this.websocket) return;
-        if (this.resourceStores[id] === null) return;
-        let {remoteResource, inProgressChangeset, outstandingChangesets} = this.resourceStores[id];
+        if (!this.resourceStores[identifier]) return;
+        let {remoteResource, inProgressChangeset, outstandingChangesets} = this.resourceStores[identifier];
 
         if (inProgressChangeset === null && outstandingChangesets.length > 0) {
             let outstandingOperations = outstandingChangesets.reduce((operations: O[], changeset: Changeset<O>): O[] => {
@@ -141,36 +152,38 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
                 operations: outstandingOperations
             }])[0];
 
-            this.resourceStores[id] = this.reducer(this.resourceStores[id], {
+            this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
                 type: "send_changeset",
                 inProgressChangeset,
                 outstandingChangesets: []
             })
-            this.websocket.send({type: "apply_changeset", id: id, changeset: inProgressChangeset});
+            this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
         }
     }
 
-    async applyRedo(id: ResourceId, client: ClientId): Promise<void> {
-        if (this.resourceStores[id] === undefined) {
-            this.resourceStores[id] = await this.resourceStoreStorage.find(id)
+    async applyRedo(id: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
+		const identifier = `${id}/${version}`
+        if (this.resourceStores[identifier] === undefined) {
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
         }
-        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_redo", client});
+        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_redo", client});
 
-        this.sendOutstandingChangesets(id);
+        this.sendOutstandingChangesets(id, version);
 
-        this.broadcast(id);
-        await this.resourceStoreStorage.save(id, this.resourceStores[id]);
+        this.broadcast(id, version);
+        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
     }
 
-    async applyUndo(id: ResourceId, client: ClientId): Promise<void> {
-        if (this.resourceStores[id] === undefined) {
-            this.resourceStores[id] = await this.resourceStoreStorage.find(id)
+    async applyUndo(id: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
+		const identifier = `${id}/${version}`
+        if (this.resourceStores[identifier] === undefined) {
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
         }
-        this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "apply_undo", client});
-        this.sendOutstandingChangesets(id);
+        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_undo", client});
+        this.sendOutstandingChangesets(id, version);
 
-        this.broadcast(id);
-        await this.resourceStoreStorage.save(id, this.resourceStores[id]);
+        this.broadcast(id, version);
+        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
     }
 
     connect() {
@@ -181,37 +194,41 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 		
         this.websocket.subscribe(response => {
             if (response.type === "resource_loaded") {
-                let {id, resource} = response;
-                this.resourceStores[id] = this.reducer(this.resourceStores[id], {type: "load_remote_resource", resource});
-                this.resendInProgressChangeset(id);
-                this.sendOutstandingChangesets(id);
-                this.broadcast(response.id);
-                this.resourceStoreStorage.save(id, this.resourceStores[id]).then();
+				let {id, resource, version} = response;
+				const identifier = `${id}/${version}`
+                this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "load_remote_resource", resource});
+                this.resendInProgressChangeset(id, version);
+                this.sendOutstandingChangesets(id, version);
+                this.broadcast(id, version);
+                this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
             } else if (response.type === "changeset_applied") {
-                let {id, changeset} = response;
-                this.resourceStores[id] = this.reducer(this.resourceStores[id], {
+				let {id, changeset, version} = response;
+				const identifier = `${id}/${version}`
+                this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
                     type: "apply_remote_changeset",
                     changeset
                 });
 
-                if (this.resourceStores[id].inProgressChangeset === null) {
-                    this.sendOutstandingChangesets(id);
+                if (this.resourceStores[identifier].inProgressChangeset === null) {
+                    this.sendOutstandingChangesets(id, version);
                 }
 
-                this.broadcast(id);
-                this.resourceStoreStorage.save(id, this.resourceStores[id]).then();
+                this.broadcast(id, version);
+                this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
             }
         });
 
-        Object.keys(this.subscribers).forEach(id => {
-            this.requestSubscriptionToResource(id).then();
+        Object.keys(this.subscribers).forEach(res => {
+			const [rId, rVer] = res.split(`/`)
+            this.requestSubscriptionToResource(rId, rVer).then();
         });
     }
 
     disconnect() {
         if (!this.websocket) return;
-        Object.keys(this.subscribers).forEach(id => {
-            this.requestUnsubscribeFromResource(id);
+        Object.keys(this.subscribers).forEach(identifier => {
+			const [id, version] = identifier.split(`/`)
+            this.requestUnsubscribeFromResource(id, version);
         });
 
         this.websocket.close();

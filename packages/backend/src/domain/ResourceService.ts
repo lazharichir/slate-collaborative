@@ -1,5 +1,5 @@
 import ResourceRepository from "./ResourceRepository";
-import {Changeset, changesetsTransformer, Resource, ResourceId, resourceReducer, ResourceRevision} from "@wleroux/resource";
+import {Changeset, changesetsTransformer, Resource, ResourceId, ResourceVersion, resourceReducer, ResourceRevision} from "@wleroux/resource";
 
 export default class ResourceService<V, S, O> {
     private readonly resourceRepository: ResourceRepository<V, S, O>
@@ -16,22 +16,22 @@ export default class ResourceService<V, S, O> {
         this.resourceRepository = resourceRepository;
     }
 
-    findResource(id: ResourceId): Promise<Resource<V, S>> {
-        return this.resourceRepository.findResource(id);
+    findResource(id: ResourceId, version: ResourceVersion): Promise<Resource<V, S>> {
+        return this.resourceRepository.findResource(id, version);
     }
 
-    findChangesetsSince(id: ResourceId, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
-        return this.resourceRepository.findChangesetsSince(id, revision);
+    findChangesetsSince(id: ResourceId, version: ResourceVersion, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
+        return this.resourceRepository.findChangesetsSince(id, version, revision);
     }
 
-    async applyChangeset(id: ResourceId, changeset: Changeset<O>): Promise<Changeset<O> | null> {
+    async applyChangeset(id: ResourceId, version: ResourceVersion, changeset: Changeset<O>): Promise<Changeset<O> | null> {
         let attempt = 0;
         while (true) {
             try {
                 let transformedChangeset = changeset;
-                let resource = await this.resourceRepository.findResource(id);
+                let resource = await this.resourceRepository.findResource(id, version);
                 if (resource.revision + 1 !== changeset.revision) {
-                    for await (const appliedChangeset of this.resourceRepository.findChangesetsSince(id, transformedChangeset.revision)) {
+                    for await (const appliedChangeset of this.resourceRepository.findChangesetsSince(id, version, transformedChangeset.revision)) {
                         if (appliedChangeset.id === transformedChangeset.id) {
                             return null; // already applied
                         }
@@ -41,8 +41,8 @@ export default class ResourceService<V, S, O> {
                 }
 
                 resource = this.resourceReducer(resource, transformedChangeset);
-                await this.resourceRepository.saveChangeset(id, transformedChangeset);
-                await this.resourceRepository.saveResource(id, resource);
+                await this.resourceRepository.saveChangeset(id, version, transformedChangeset);
+                await this.resourceRepository.saveResource(id, version, resource);
                 return transformedChangeset;
             } catch (e) {
                 if (attempt < 5 && e.code === "ConditionalCheckFailedException") {

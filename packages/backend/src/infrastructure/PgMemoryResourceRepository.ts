@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ResourceRepository from "../domain/ResourceRepository";
 import Knex from "knex";
 import {

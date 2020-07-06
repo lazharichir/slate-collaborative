@@ -1,8 +1,9 @@
 import ConnectionService from "./ConnectionService";
 import ResourceConnectionRepository from "./ResourceConnectionRepository";
 import {ConnectionId} from "./ConnectionId";
-import {ResourceId} from "@wleroux/resource";
+import {ResourceId, ResourceVersion} from "@wleroux/resource";
 import {Response} from "../application/Response";
+import { version } from "punycode";
 
 export default class ResourceConnectionService<V, S, O> {
     private resourceConnectionRepository: ResourceConnectionRepository;
@@ -13,24 +14,24 @@ export default class ResourceConnectionService<V, S, O> {
         this.connectionService = connectionService;
     }
 
-    addConnection(resourceId: ResourceId, connectionId: ConnectionId): Promise<void> {
-        return this.resourceConnectionRepository.addConnection(resourceId, connectionId);
+    addConnection(resourceId: ResourceId, resourceVersion: ResourceVersion, connectionId: ConnectionId): Promise<void> {
+        return this.resourceConnectionRepository.addConnection(resourceId, resourceVersion, connectionId);
     }
 
-    removeConnection(resourceId: ResourceId, connectionId: ConnectionId): Promise<void> {
-        return this.resourceConnectionRepository.removeConnection(resourceId, connectionId);
+    removeConnection(resourceId: ResourceId, resourceVersion: ResourceVersion, connectionId: ConnectionId): Promise<void> {
+        return this.resourceConnectionRepository.removeConnection(resourceId, resourceVersion, connectionId);
     }
 
-    async broadcast(id: ResourceId, response: Response<V, S, O>, excludeConnectionId?: ConnectionId): Promise<void> {
-		let connections = (await this.resourceConnectionRepository.findConnectionsByResourceId(id))
+    async broadcast(id: ResourceId, resourceVersion: ResourceVersion, response: Response<V, S, O>, excludeConnectionId?: ConnectionId): Promise<void> {
+		let connections = (await this.resourceConnectionRepository.findConnectionsByResourceId(id, resourceVersion))
 			.filter(connectionId => connectionId !== excludeConnectionId);
-		console.log(`📡 Broadcasting`, { id, response, excludeConnectionId }, connections)
+		console.log(`📡 Broadcasting`, { id, resourceVersion, response, excludeConnectionId }, connections)
 		await Promise.all(connections.map(resourceConnectionId => {
 			try {
 				return this.connectionService.send(resourceConnectionId, response)
 			} catch (e) {
 				console.error(`broadcast error: `, e)
-				return this.resourceConnectionRepository.removeConnection(id, resourceConnectionId)
+				return this.resourceConnectionRepository.removeConnection(id, resourceVersion, resourceConnectionId)
 				// throw e;
 			}
 		}));

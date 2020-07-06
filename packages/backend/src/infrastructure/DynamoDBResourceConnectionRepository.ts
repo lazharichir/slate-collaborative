@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ResourceConnectionRepository from "../domain/ResourceConnectionRepository";
 import {ConnectionId} from "../domain/ConnectionId";
 import {DynamoDB} from "aws-sdk";
