@@ -9,7 +9,6 @@ import ResourceWebsocket from "./remote/ResourceWebsocket";
 import IndexedDBResourceStoreStorage from "./local/IndexedDBResourceStoreStorage";
 import {Subscriber} from "./Subscriber";
 import {Subscription} from "./Subscription";
-import { version } from "process";
 
 export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService<V, S, O> {
     private readonly resourceStoreStorage: ResourceStoreStorage<V, S, O>;
@@ -19,7 +18,11 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 
     private readonly resourceStores: { [key: string]: ResourceStore<V, S, O> } = {};
     private readonly subscribers: { [key: string]: Subscriber<Resource<V, S>>[] } = {};
-    private websocket: ResourceWebsocket<V, S, O> | null = null;
+	private websocket: ResourceWebsocket<V, S, O> | null = null;
+	
+	private readonly delay: number|null = 2000
+	private lastSent: Date|null = null
+	private interval: ReturnType<typeof setInterval>|null = null
 
     constructor(
         websocketUrl: string,
@@ -63,7 +66,8 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
             await this.requestSubscriptionToResource(id, version);
         }
 
-        this.subscribers[identifier] = [...this.subscribers[identifier], subscriber];
+		this.subscribers[identifier] = [...this.subscribers[identifier], subscriber];
+		
         return () => {
             this.subscribers[identifier] = this.subscribers[identifier].filter(s => s !== subscriber);
             if (this.subscribers[identifier].length === 0) {
@@ -131,7 +135,26 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         if (inProgressChangeset !== null) {
             this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
         }
-    }
+	}
+	
+	private setSendOutstandingChangesetssInterval(id: ResourceId, version: ResourceVersion, intervalMs: number = 1000): void {
+		this.interval = setInterval(() => {
+			this.sendOutstandingChangesets(id, version)
+		}, intervalMs)
+	}
+
+	private clearSendOutstandingChangesetssInterval(): void {
+		if (this.interval)
+			clearInterval(this.interval)
+	}
+	
+	private hasEnoughTimeElapsed(): boolean {
+		if (!this.delay) return true;
+		if (!this.lastSent) return true;
+		const last = this.lastSent.getTime()
+		const now = new Date().getTime()
+		return (now - last) >= this.delay
+	}
 
     private sendOutstandingChangesets(id: ResourceId, version: ResourceVersion) {
 		const identifier = `${id}/${version}`
@@ -139,7 +162,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         if (!this.resourceStores[identifier]) return;
         let {remoteResource, inProgressChangeset, outstandingChangesets} = this.resourceStores[identifier];
 
-        if (inProgressChangeset === null && outstandingChangesets.length > 0) {
+        if (inProgressChangeset === null && outstandingChangesets.length > 0 && this.hasEnoughTimeElapsed()) {
             let outstandingOperations = outstandingChangesets.reduce((operations: O[], changeset: Changeset<O>): O[] => {
                 return [...operations, ...changeset.operations];
             }, []);
@@ -156,8 +179,10 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
                 type: "send_changeset",
                 inProgressChangeset,
                 outstandingChangesets: []
-            })
-            this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
+			})
+			
+			this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
+			this.lastSent = new Date();
         }
     }
 
@@ -184,7 +209,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 
         this.broadcast(id, version);
         await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
-    }
+	}
 
     connect() {
         if (!this.websocketUrl) return;
@@ -200,7 +225,8 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
                 this.resendInProgressChangeset(id, version);
                 this.sendOutstandingChangesets(id, version);
                 this.broadcast(id, version);
-                this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
+				this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
+				this.setSendOutstandingChangesetssInterval(id, version)
             } else if (response.type === "changeset_applied") {
 				let {id, changeset, version} = response;
 				const identifier = `${id}/${version}`
@@ -214,13 +240,14 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
                 }
 
                 this.broadcast(id, version);
-                this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
-            }
+				this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
+				this.setSendOutstandingChangesetssInterval(id, version)
+			}			
         });
 
         Object.keys(this.subscribers).forEach(res => {
 			const [rId, rVer] = res.split(`/`)
-            this.requestSubscriptionToResource(rId, rVer).then();
+			this.requestSubscriptionToResource(rId, rVer).then();
         });
     }
 
@@ -232,6 +259,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         });
 
         this.websocket.close();
-        this.websocket = null;
+		this.websocket = null;
+		this.clearSendOutstandingChangesetssInterval()
     }
 }
