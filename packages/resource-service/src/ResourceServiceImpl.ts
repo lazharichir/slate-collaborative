@@ -75,8 +75,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
     async applyOperations(id: ResourceId, version: ResourceVersion, client: ClientId, operations: O[]) {
 
 		const identifier = `${id}/${version}`
-
-        if (this.resourceStores[identifier] === undefined) {
+        if (!this.resourceStores[identifier]) {
             this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
         }
 
@@ -94,14 +93,14 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 
     private broadcast(id: ResourceId, version: ResourceVersion) {
 		const identifier = `${id}/${version}`
-        if (this.subscribers[identifier] === null) return;
+        if (!this.subscribers[identifier]) return;
         this.subscribers[identifier].forEach(subscriber => subscriber(this.resourceStores[identifier].localResource));
     }
 
     private async requestSubscriptionToResource(id: ResourceId, version: ResourceVersion) {
 		if (!this.websocket) return;
 		const identifier = `${id}/${version}`
-        if (this.resourceStores[identifier] === undefined) {
+        if (!this.resourceStores[identifier]) {
             this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version);
         }
 
@@ -126,7 +125,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
     private resendInProgressChangeset(id: ResourceId, version: ResourceVersion) {
 		const identifier = `${id}/${version}`
 		if (!this.websocket) return;
-        if (this.resourceStores[identifier] === null) return;
+        if (!this.resourceStores[identifier]) return;
 
         let {inProgressChangeset} = this.resourceStores[identifier];
         if (inProgressChangeset !== null) {
@@ -137,7 +136,7 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
     private sendOutstandingChangesets(id: ResourceId, version: ResourceVersion) {
 		const identifier = `${id}/${version}`
         if (!this.websocket) return;
-        if (this.resourceStores[identifier] === null) return;
+        if (!this.resourceStores[identifier]) return;
         let {remoteResource, inProgressChangeset, outstandingChangesets} = this.resourceStores[identifier];
 
         if (inProgressChangeset === null && outstandingChangesets.length > 0) {
@@ -219,8 +218,9 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
             }
         });
 
-        Object.keys(this.subscribers).forEach(id => {
-            this.requestSubscriptionToResource(id, version).then();
+        Object.keys(this.subscribers).forEach(res => {
+			const [rId, rVer] = res.split(`/`)
+            this.requestSubscriptionToResource(rId, rVer).then();
         });
     }
 
