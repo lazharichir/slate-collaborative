@@ -12,7 +12,7 @@ export default class InMemoryResourceConnectionRepository implements ResourceCon
 
 		setInterval(() => {
 			console.log(`\n\nInMemory Resource Connection – STATE\n`, this.rows)
-		}, 3000)
+		}, 10000)
 
 	}
 
