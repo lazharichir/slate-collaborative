@@ -1,7 +1,5 @@
-import React, {ChangeEvent, useCallback, useState} from 'react';
-import {randomUUID} from "./util/randomUUID";
+import React from 'react';
 import CollaborativeRichTextEditor from "./editor/CollaborativeRichTextEditor";
-import {ClientId, ResourceId, ResourceVersion} from "@wleroux/resource";
 import {slateResourceService, SlateResourceServiceContext} from "@wleroux/slate-react-resource";
 import {webSocketUrl} from "./config";
 
