@@ -16,7 +16,8 @@ import {
 } from "@wleroux/slate-value"
 
 export function slateResourceService(
-	webSocketUrl: string
+	webSocketUrl: string,
+	delay: number = 0,
 ): ResourceService<SlateValue, SlateSelection, SlateOperation> {
 	return new ResourceServiceImpl<
 		VersionedSlateValue,
@@ -27,6 +28,7 @@ export function slateResourceService(
 		SlateOperation
 	>(
 		webSocketUrl,
+		delay,
 		SlateValue.DEFAULT,
 		slateValueReducer,
 		slateValueUpcaster,
@@ -35,6 +37,6 @@ export function slateResourceService(
 		slateOperationUpcaster,
 		slateOperationInverter,
 		slateOperationsOptimizer,
-		SlateOperation.isMutationOperation
+		SlateOperation.isMutationOperation,
 	)
 }

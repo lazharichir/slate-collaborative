@@ -20,12 +20,13 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
     private readonly subscribers: { [key: string]: Subscriber<Resource<V, S>>[] } = {};
 	private websocket: ResourceWebsocket<V, S, O> | null = null;
 	
-	private readonly delay: number|null = 2000
+	private delay: number = 0
 	private lastSent: Date|null = null
 	private interval: ReturnType<typeof setInterval>|null = null
 
     constructor(
-        websocketUrl: string,
+		websocketUrl: string,
+		delay: number = 0,
         defaultValue: V,
         valueReducer: (value: V, operation: O) => V,
         valueUpcaster: (versionedValue: VV) => V,
@@ -34,10 +35,11 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         operationUpcaster: (versionedOperation: VO) => O,
         operationInverter: (operation: O) => O,
         operationsOptimizer: (operations: O[]) => O[],
-        isMutationOperation: (operation: O) => boolean
+		isMutationOperation: (operation: O) => boolean,
     ) {
         this.websocketUrl = websocketUrl;
-        this.resourceStoreStorage = new IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O>(defaultValue, valueUpcaster, operationUpcaster);
+        this.delay = delay;
+		this.resourceStoreStorage = new IndexedDBResourceStoreStorage<VV, V, VS, S, VO, O>(defaultValue, valueUpcaster, operationUpcaster);
         this.optimizer = changesetsOptimizer(operationsOptimizer)
         this.reducer = resourceStoreReducer(valueReducer, selectionsReducer, operationInverter, operationsTransformer, isMutationOperation);
 
@@ -137,10 +139,14 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         }
 	}
 	
-	private setSendOutstandingChangesetssInterval(id: ResourceId, version: ResourceVersion, intervalMs: number = 1000): void {
+	private setSendOutstandingChangesetssInterval(id: ResourceId, version: ResourceVersion, intervalMs?: number): void {
+		const intervalInMs = intervalMs || this.delay
+		if (!intervalInMs)
+			return
+
 		this.interval = setInterval(() => {
 			this.sendOutstandingChangesets(id, version)
-		}, intervalMs)
+		}, intervalInMs)
 	}
 
 	private clearSendOutstandingChangesetssInterval(): void {

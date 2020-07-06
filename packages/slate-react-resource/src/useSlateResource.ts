@@ -28,7 +28,6 @@ export function useSlateResource(
 	id: ResourceId,
 	version: ResourceVersion,
 	client: ClientId,
-	delay: number = 2000
 ): ResourceContext {
 
 	let resourceService = React.useContext<
