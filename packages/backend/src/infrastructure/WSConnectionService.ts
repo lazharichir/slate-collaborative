@@ -33,6 +33,7 @@ export default class WSConnectionService<V, S, O>
 		
 		if (!client) {
 			console.log(`⬆️ Connection not found: ${connectionId}. `, JSON.stringify(this.connections.keys(), null, 2))
+			await this.close(connectionId)
 			return
 		}
 

@@ -28,7 +28,7 @@ export async function up(knex: Knex): Promise<any> {
 	})
 	
 	.createTable(`connections`, function (table) {
-		table.uuid(`id`).primary(`pk_ops_id`)
+		table.uuid(`id`).primary(`pk_connections_id`)
 		table.string(`connection`).notNullable()
 		table.string(`document`).notNullable()
 		table.string(`version`).notNullable()
