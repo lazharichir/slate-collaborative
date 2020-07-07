@@ -74,40 +74,51 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
 
     async saveResource(document: ResourceId, version: ResourceVersion, resource: Resource<V, S>): Promise<void> {
 		this.log(`🧳 PgResourceRepository.saveResource: `, { document, version, resource })
+		const txn = await this.knex.transaction();
+		try {
 
-		const existing = await this.knex(this.resourceTableName).select().where({ document, version }).limit(1)
+			const existing = await txn(this.resourceTableName).select().where({ document, version }).limit(1)
 
-		if (existing[0]) {
-			await this.knex(this.resourceTableName).update({
-				id: existing[0].id,
-				revision: parseInt(resource.revision),
-				value: JSON.stringify(resource.value),
-				cursors: JSON.stringify(resource.cursors),
-				metadata: JSON.stringify(resource.metadata),
-				inserted_by: ``,
-			}).where({ document, version })
+			if (existing[0]) {
+				await txn(this.resourceTableName).update({
+					id: existing[0].id,
+					revision: parseInt(resource.revision),
+					value: JSON.stringify(resource.value),
+					cursors: JSON.stringify(resource.cursors),
+					metadata: JSON.stringify(resource.metadata),
+					inserted_by: ``,
+				}).where({ document, version })
+			}
+			
+			else {
+				await txn(this.resourceTableName).insert({
+					id: UniqueIdGenerator.generateUUID(),
+					document,
+					version,
+					revision: parseInt(resource.revision),
+					value: JSON.stringify(resource.value),
+					cursors: JSON.stringify(resource.cursors),
+					metadata: JSON.stringify(resource.metadata),
+					inserted_by: ``,
+				})
+			}
+
+			await txn.commit()
+		} catch (error) {
+			await txn.rollback(error)
 		}
-		
-		else {
-			await this.knex(this.resourceTableName).insert({
-				id: UniqueIdGenerator.generateUUID(),
-				document,
-				version,
-				revision: parseInt(resource.revision),
-				value: JSON.stringify(resource.value),
-				cursors: JSON.stringify(resource.cursors),
-				metadata: JSON.stringify(resource.metadata),
-				inserted_by: ``,
-			})
-		}
-
-		return;
     }
 
     async deleteResource(document: ResourceId, version: ResourceVersion): Promise<void> {
 		this.log(`🧳 PgResourceRepository.deleteResource: `, { document, version })
-		await this.knex(this.resourceTableName).delete().where({ document, version })
-		await this.knex(this.changesetTableName).delete().where({ document, version })
+		const txn = await this.knex.transaction();
+		try {
+			await txn(this.resourceTableName).delete().where({ document, version })
+			await txn(this.changesetTableName).delete().where({ document, version })
+			await txn.commit()
+		} catch (error) {
+			await txn.rollback(error)
+		}
     }
 
     async *findChangesetsSince(document: ResourceId, version: ResourceVersion, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
@@ -127,22 +138,29 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
 
     async saveChangeset(document: ResourceId, version: ResourceVersion, changeset: Changeset<O>): Promise<void> {
 		this.log(`🧳 PgResourceRepository.saveChangeset: `, { document, version, changeset })
-		
-		const resources = await this.knex(this.resourceTableName).select([`id`]).where({ document, version, revision: changeset.revision })
-		
-		if (resources[0])
-			return
+		const txn = await this.knex.transaction();
+		try {
+			const resources = await txn(this.resourceTableName).select([`id`]).where({ document, version, revision: changeset.revision })
+			
+			if (!resources[0]) {
+	
+				await txn(this.changesetTableName).insert({
+					id: changeset.id,
+					document,
+					version,
+					revision: changeset.revision,
+					inserted_by: changeset.client,
+					operations: JSON.stringify(changeset.operations),
+					metadata: JSON.stringify(changeset.metadata),
+				})
+	
+			}
+	
+			await txn.commit()
 
-		await this.knex(this.changesetTableName).insert({
-			id: changeset.id,
-			document,
-			version,
-			revision: changeset.revision,
-			inserted_by: changeset.client,
-			operations: JSON.stringify(changeset.operations),
-			metadata: JSON.stringify(changeset.metadata),
-		})
-
+		} catch (error) {
+			await txn.rollback(error)
+		}
 	}
 	
 	private log(...args: any[]) {
