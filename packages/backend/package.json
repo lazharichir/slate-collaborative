@@ -43,7 +43,10 @@
     "postbuild": "cp -R public/ dist && cd dist && npm install --production",
     "start": "npm run build && node dist/src/server.js",
     "start:dev": "ts-node --files ./src/server.ts",
-    "start:watch": "nodemon",
-    "test": "jest"
+	"start:watch": "nodemon",
+	"knex:migrate:make": "knex --knexfile src/database/knexfile.ts migrate:make -x ts",
+    "knex:migrate:latest": "knex --knexfile src/database/knexfile.ts migrate:latest",
+    "knex:migrate:rollback": "knex --knexfile src/database/knexfile.ts migrate:rollback",
+    "test": "jest --coverage"
   }
 }
