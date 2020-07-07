@@ -27,7 +27,7 @@ type ResourceContext = {
 export function useSlateResource(
 	id: ResourceId,
 	version: ResourceVersion,
-	client: ClientId
+	client: ClientId,
 ): ResourceContext {
 
 	let resourceService = React.useContext<

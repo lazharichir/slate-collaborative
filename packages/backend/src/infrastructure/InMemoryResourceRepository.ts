@@ -31,7 +31,7 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
 
     async findResource(id: ResourceId, version: ResourceVersion): Promise<Resource<V, S>> {
 		const row = this.resourceRows.find(row => row.id === id && row.version === version)
-		this.log(`🧳 InMemoryResourceRepository.findResource: `, { id, version }, row, this.resourceRows)
+		this.log(`🧳 InMemoryResourceRepository.findResource: `, { id, version }, JSON.stringify(row))
 		if (row) {
 			return this.resourceUpcaster((row.resource as unknown) as VersionedResource<VV, VS>);
 		} else {
@@ -44,11 +44,11 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
 			const isTheOne = row.id === id && row.version === version
 			return !isTheOne
 		}).concat({ id, version, resource })
-		this.log(`🧳 InMemoryResourceRepository.saveResource: `, { id, version, resource }, this.resourceRows)
+		this.log(`🧳 InMemoryResourceRepository.saveResource: `, { id, version, resource })
     }
 
     async deleteResource(id: ResourceId, version: ResourceVersion): Promise<void> {
-		this.log(`🧳 InMemoryResourceRepository.deleteResource: `, { id, version }, this.resourceRows)
+		this.log(`🧳 InMemoryResourceRepository.deleteResource: `, { id, version })
 		this.resourceRows = this.resourceRows.filter(row => {
 			const isTheOne = row.id === id && row.version === version
 			return !isTheOne
@@ -60,7 +60,7 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
     }
 
     async *findChangesetsSince(id: ResourceId, version: ResourceVersion, revision: ResourceRevision): AsyncIterable<Changeset<O>> {
-		this.log(`🧳 InMemoryResourceRepository.findChangesetsSince: `, { id, version, revision }, this.resourceChangesetRows)
+		this.log(`🧳 InMemoryResourceRepository.findChangesetsSince: `, { id, version, revision })
 		const changesetsSince = this.resourceChangesetRows.filter((row) => row.id === id && row.version === version && row.revision >= revision)
 		for (const item of changesetsSince) {
 			yield this.changesetUpcaster(item.changeset as unknown as VersionedChangeset<VO>);
@@ -68,7 +68,7 @@ export default class InMemoryResourceRepository<VV, V, VS, S, VO, O> implements 
     }
 
     async saveChangeset(id: ResourceId, version: ResourceVersion, changeset: Changeset<O>): Promise<void> {
-		this.log(`🧳 InMemoryResourceRepository.saveChangeset: `, { id, changeset }, this.resourceChangesetRows)
+		this.log(`🧳 InMemoryResourceRepository.saveChangeset: `, { id, changeset })
 		const resourceChangeset = this.resourceChangesetRows.find(row => row.id === id && row.version === version && row.revision === changeset.revision)
 		if (resourceChangeset)
 			return

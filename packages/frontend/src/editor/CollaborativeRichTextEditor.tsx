@@ -36,7 +36,6 @@ type RichTextEditorProps = {
 	clientId: ClientId,
 	resourceId: ResourceId,
 	resourceVersion: ResourceVersion,
-	bufferFor?: number,
 }
 
 export default function CollaborativeRichTextEditor(props: RichTextEditorProps) {
