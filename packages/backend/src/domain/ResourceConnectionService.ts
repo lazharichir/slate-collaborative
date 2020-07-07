@@ -24,7 +24,7 @@ export default class ResourceConnectionService<V, S, O> {
     async broadcast(id: ResourceId, resourceVersion: ResourceVersion, response: Response<V, S, O>, excludeConnectionId?: ConnectionId): Promise<void> {
 		let connections = (await this.resourceConnectionRepository.findConnectionsByResourceId(id, resourceVersion))
 			.filter(connectionId => connectionId !== excludeConnectionId);
-		console.log(`📡 Broadcasting`, { id, resourceVersion, excludeConnectionId }, connections, JSON.stringify(response, null, 2))
+		console.log(`📡 Broadcasting`, { id, resourceVersion, excludeConnectionId }, connections)
 		await Promise.all(connections.map(resourceConnectionId => {
 			try {
 				return this.connectionService.send(resourceConnectionId, response)

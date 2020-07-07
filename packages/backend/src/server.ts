@@ -1,6 +1,6 @@
 import fastify from "fastify"
 import FastifyWebsocket from "fastify-websocket"
-import { websocketHandler } from "./handler"
+import { websocketHandler } from "./handler.pg"
 
 export const server = fastify({
 	logger: true,
