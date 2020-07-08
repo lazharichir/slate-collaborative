@@ -2,20 +2,20 @@ import {VersionedChangeset, VersionedResourceId, VersionedResourceVersion, Versi
 
 type SUBSCRIBE_TO_RECORD<VV> = {
     type: "subscribe";
-    id: VersionedResourceId;
+    document: VersionedResourceId;
     version: VersionedResourceVersion;
     since: "latest" | VersionedResourceRevision
 };
 
 type UNSUBSCRIBE_FROM_RECORD = {
     type: "unsubscribe";
-	id: VersionedResourceId;
+	document: VersionedResourceId;
 	version: VersionedResourceVersion;
 };
 
 type APPLY_CHANGESET<VO> = {
     type: "apply_changeset";
-	id: VersionedResourceId;
+	document: VersionedResourceId;
 	version: VersionedResourceVersion;
     changeset: VersionedChangeset<VO>;
 };

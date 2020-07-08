@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/link-ws": "^2.0.0-beta.3",
     "@wleroux/resource": "file:../resource",
     "@wleroux/resource-service": "file:../resource-service",
     "@wleroux/slate-react-resource": "file:../slate-react-resource",
@@ -12,7 +13,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "slate": "^0.58.3",
-    "slate-react": "^0.58.3"
+    "slate-react": "^0.58.3",
+    "subscriptions-transport-ws": "^0.9.16"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",

@@ -78,23 +78,25 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         };
     }
 
-    async applyOperations(id: ResourceId, version: ResourceVersion, client: ClientId, operations: O[]) {
+    async applyOperations(document: ResourceId, version: ResourceVersion, client: ClientId, operations: O[]) {
 
-		const identifier = `${id}/${version}`
+		const identifier = `${document}/${version}`
         if (!this.resourceStores[identifier]) {
-            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(document, version)
         }
 
         this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
             type: "apply_local_operations",
             client,
-            operations
+			operations,
+			document,
+			version,
         });
 
-        this.sendOutstandingChangesets(id, version);
+        this.sendOutstandingChangesets(document, version);
 
-        this.broadcast(id, version);
-        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
+        this.broadcast(document, version);
+        await this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]);
     }
 
     private broadcast(id: ResourceId, version: ResourceVersion) {
@@ -103,39 +105,39 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
         this.subscribers[identifier].forEach(subscriber => subscriber(this.resourceStores[identifier].localResource));
     }
 
-    private async requestSubscriptionToResource(id: ResourceId, version: ResourceVersion) {
+    private async requestSubscriptionToResource(document: ResourceId, version: ResourceVersion) {
 		if (!this.websocket) return;
-		const identifier = `${id}/${version}`
+		const identifier = `${document}/${version}`
         if (!this.resourceStores[identifier]) {
-            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version);
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(document, version);
         }
 
         let {remoteResource} = this.resourceStores[identifier];
         this.websocket.send({
             type: "subscribe",
-			id: id,
+			document,
 			version: version,
             since: remoteResource.revision === 0 ? "latest" : remoteResource.revision + 1
         });
-        this.resendInProgressChangeset(id, version);
-        this.sendOutstandingChangesets(id, version);
+        this.resendInProgressChangeset(document, version);
+        this.sendOutstandingChangesets(document, version);
 
-        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
+        await this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]);
     }
 
-    private requestUnsubscribeFromResource(id: ResourceId, version: ResourceVersion) {
+    private requestUnsubscribeFromResource(document: ResourceId, version: ResourceVersion) {
         if (!this.websocket) return;
-        this.websocket.send({type: "unsubscribe", id, version});
+        this.websocket.send({type: "unsubscribe", document, version});
     }
 
-    private resendInProgressChangeset(id: ResourceId, version: ResourceVersion) {
-		const identifier = `${id}/${version}`
+    private resendInProgressChangeset(document: ResourceId, version: ResourceVersion) {
+		const identifier = `${document}/${version}`
 		if (!this.websocket) return;
         if (!this.resourceStores[identifier]) return;
 
         let {inProgressChangeset} = this.resourceStores[identifier];
         if (inProgressChangeset !== null) {
-            this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
+            this.websocket.send({type: "apply_changeset", document, version, changeset: inProgressChangeset});
         }
 	}
 	
@@ -162,8 +164,8 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 		return (now - last) >= this.delay
 	}
 
-    private sendOutstandingChangesets(id: ResourceId, version: ResourceVersion) {
-		const identifier = `${id}/${version}`
+    private sendOutstandingChangesets(document: ResourceId, version: ResourceVersion) {
+		const identifier = `${document}/${version}`
         if (!this.websocket) return;
         if (!this.resourceStores[identifier]) return;
         let {remoteResource, inProgressChangeset, outstandingChangesets} = this.resourceStores[identifier];
@@ -175,7 +177,9 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 
             let inProgressChangeset: Changeset<O> = this.optimizer([{
                 metadata: {type: "CHANGESET", version: 1},
-                id: randomUUID(),
+				id: randomUUID(),
+				document: document,
+				version: version,
                 client: outstandingChangesets[0].client,
                 revision: remoteResource.revision + 1,
                 operations: outstandingOperations
@@ -184,37 +188,39 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
             this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
                 type: "send_changeset",
                 inProgressChangeset,
-                outstandingChangesets: []
+				outstandingChangesets: [],
+				document,
+				version,
 			})
 			
-			this.websocket.send({type: "apply_changeset", id, version, changeset: inProgressChangeset});
+			this.websocket.send({type: "apply_changeset", document, version, changeset: inProgressChangeset});
 			this.lastSent = new Date();
         }
     }
 
-    async applyRedo(id: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
-		const identifier = `${id}/${version}`
+    async applyRedo(document: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
+		const identifier = `${document}/${version}`
         if (this.resourceStores[identifier] === undefined) {
-            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(document, version)
         }
-        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_redo", client});
+        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_redo", client, document, version});
 
-        this.sendOutstandingChangesets(id, version);
+        this.sendOutstandingChangesets(document, version);
 
-        this.broadcast(id, version);
-        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
+        this.broadcast(document, version);
+        await this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]);
     }
 
-    async applyUndo(id: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
-		const identifier = `${id}/${version}`
+    async applyUndo(document: ResourceId, version: ResourceVersion, client: ClientId): Promise<void> {
+		const identifier = `${document}/${version}`
         if (this.resourceStores[identifier] === undefined) {
-            this.resourceStores[identifier] = await this.resourceStoreStorage.find(id, version)
+            this.resourceStores[identifier] = await this.resourceStoreStorage.find(document, version)
         }
-        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_undo", client});
-        this.sendOutstandingChangesets(id, version);
+        this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "apply_undo", client, document, version });
+        this.sendOutstandingChangesets(document, version);
 
-        this.broadcast(id, version);
-        await this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]);
+        this.broadcast(document, version);
+        await this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]);
 	}
 
     connect() {
@@ -225,29 +231,31 @@ export class ResourceServiceImpl<VV, V, VS, S, VO, O> implements ResourceService
 		
         this.websocket.subscribe(response => {
             if (response.type === "resource_loaded") {
-				let {id, resource, version} = response;
-				const identifier = `${id}/${version}`
-                this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "load_remote_resource", resource});
-                this.resendInProgressChangeset(id, version);
-                this.sendOutstandingChangesets(id, version);
-                this.broadcast(id, version);
-				this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
-				this.setSendOutstandingChangesetssInterval(id, version)
+				let {document, resource, version} = response;
+				const identifier = `${document}/${version}`
+                this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {type: "load_remote_resource", resource, document, version});
+                this.resendInProgressChangeset(document, version);
+                this.sendOutstandingChangesets(document, version);
+                this.broadcast(document, version);
+				this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]).then();
+				this.setSendOutstandingChangesetssInterval(document, version)
             } else if (response.type === "changeset_applied") {
-				let {id, changeset, version} = response;
-				const identifier = `${id}/${version}`
+				let {document, changeset, version} = response;
+				const identifier = `${document}/${version}`
                 this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
                     type: "apply_remote_changeset",
-                    changeset
+					changeset,
+					document,
+					version,
                 });
 
                 if (this.resourceStores[identifier].inProgressChangeset === null) {
-                    this.sendOutstandingChangesets(id, version);
+                    this.sendOutstandingChangesets(document, version);
                 }
 
-                this.broadcast(id, version);
-				this.resourceStoreStorage.save(id, version, this.resourceStores[identifier]).then();
-				this.setSendOutstandingChangesetssInterval(id, version)
+                this.broadcast(document, version);
+				this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]).then();
+				this.setSendOutstandingChangesetssInterval(document, version)
 			}			
         });
 

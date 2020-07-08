@@ -50,6 +50,8 @@ export default class PgResourceRepository<VV, V, VS, S, VO, O> implements Resour
 	mapChangesetRowToObject(row: any): Changeset<O> {
 		return {
 			id: String(row.id) as ChangesetId,
+			document: String(row.document) as ResourceId,
+			version: String(row.version) as ResourceVersion,
 			revision: parseInt(String(row.revision)) as ResourceRevision,
 			client: String(row.inserted_by) as ClientId,
 			operations: row.operations as O[],

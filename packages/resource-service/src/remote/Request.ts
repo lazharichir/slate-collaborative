@@ -2,21 +2,20 @@ import {Changeset, ResourceId, ResourceVersion, ResourceRevision} from "@wleroux
 
 type SUBSCRIBE_TO_RESOURCE<V> = {
     type: "subscribe";
-    id: ResourceId;
+    document: ResourceId;
     version: ResourceVersion;
     since: "latest" | ResourceRevision
 };
 
-
 type UNSUBSCRIBE_FROM_RESOURCE = {
     type: "unsubscribe";
-	id: ResourceId;
+	document: ResourceId;
 	version: ResourceVersion;
 };
 
 type APPLY_CHANGESET<O> = {
     type: "apply_changeset";
-	id: ResourceId;
+	document: ResourceId;
 	version: ResourceVersion;
     changeset: Changeset<O>;
 };

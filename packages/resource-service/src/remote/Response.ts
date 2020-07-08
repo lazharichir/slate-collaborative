@@ -1,20 +1,20 @@
 import {Changeset, Resource, ResourceId, ResourceVersion} from "@wleroux/resource";
 
-type RESOURCE_LOADED<V, S> = {
+export type RESOURCE_LOADED<V, S> = {
     type: "resource_loaded";
-	id: ResourceId;
+	document: ResourceId;
 	version: ResourceVersion
     resource: Resource<V, S>;
 };
 
-type CHANGESET_APPLIED<O> = {
+export type CHANGESET_APPLIED<O> = {
     type: "changeset_applied";
-	id: ResourceId;
+	document: ResourceId;
 	version: ResourceVersion
     changeset: Changeset<O>;
 };
 
-type KEEP_ALIVE = {
+export type KEEP_ALIVE = {
     type: "keep_alive";
 };
 

@@ -22,32 +22,32 @@ export default class RequestHandler<VV, V, VS, S, VO, O> {
 
     async handle(connectionId: ConnectionId, request: Request<VV, VO>): Promise<void> {
         if (request.type === "subscribe") {
-            await this.resourceConnectionService.addConnection(request.id, request.version, connectionId);
+            await this.resourceConnectionService.addConnection(request.document, request.version, connectionId);
             let since;
             if (request.since === "latest") {
-                let resource = await this.resourceService.findResource(request.id, request.version);
-                await this.connectionService.send(connectionId, {type: "resource_loaded", id: request.id, version: request.version, resource});
+                let resource = await this.resourceService.findResource(request.document, request.version);
+                await this.connectionService.send(connectionId, {type: "resource_loaded", id: request.document, version: request.version, resource});
                 since = resource.revision;
             } else {
                 since = request.since;
             }
             let promises = [];
-            for await (const changeset of this.resourceService.findChangesetsSince(request.id, request.version, since)) {
-                promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id: request.id, version: request.version, changeset}));
+            for await (const changeset of this.resourceService.findChangesetsSince(request.document, request.version, since)) {
+                promises.push(this.connectionService.send(connectionId, {type: "changeset_applied", id: request.document, version: request.version, changeset}));
             }
             await Promise.all(promises);
         } else if (request.type === "unsubscribe") {
-            await this.resourceConnectionService.removeConnection(request.id, request.version, connectionId);
+            await this.resourceConnectionService.removeConnection(request.document, request.version, connectionId);
         } else if (request.type === "apply_changeset") {
-            let {id, version, changeset} = request;
-            let appliedChangeset = await this.resourceService.applyChangeset(id, version, this.changesetUpcaster(changeset));
+            let {document, version, changeset} = request;
+            let appliedChangeset = await this.resourceService.applyChangeset(document, version, this.changesetUpcaster(changeset));
             if (appliedChangeset !== null) {
                 await this.connectionService.send(connectionId, {
                     type: "changeset_applied",
-					id, version,
+					id: document, version,
 					changeset: appliedChangeset
                 })
-                await this.resourceConnectionService.broadcast(id, version, {type: "changeset_applied", id, version, changeset: appliedChangeset}, connectionId);
+                await this.resourceConnectionService.broadcast(document, version, {type: "changeset_applied", id: document, version, changeset: appliedChangeset}, connectionId);
             }
         } else if (request.type === "keep_alive") {
             // do nothing!

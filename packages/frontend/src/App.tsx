@@ -1,7 +1,7 @@
 import React from 'react';
 import CollaborativeRichTextEditor from "./editor/CollaborativeRichTextEditor";
-import { slateResourceService, SlateResourceServiceContext } from "@wleroux/slate-react-resource";
-import { webSocketUrl } from "./config";
+import { graphqlSlateResourceService, SlateResourceServiceContext } from "@wleroux/slate-react-resource";
+import { client } from "./graphql/client";
 
 function App() {
 
@@ -16,7 +16,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<SlateResourceServiceContext.Provider value={slateResourceService(webSocketUrl, 3000)}>
+			<SlateResourceServiceContext.Provider value={graphqlSlateResourceService(client, 3000)}>
 				<CollaborativeRichTextEditor 
 					resourceId={resourceId} 
 					resourceVersion={resourceVersion} 

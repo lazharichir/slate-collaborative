@@ -31,12 +31,15 @@ export function resourceStoreReducer<V, S, O>(
             undoQueue = [];
             redoQueue = [];
         } else if (action.type === "apply_local_operations") {
+
             let outstandingChangeset: Changeset<O> = {
                 metadata: {type: "CHANGESET", version: 1},
                 id: randomUUID(),
                 client: action.client,
                 revision: localResource.revision + 1,
-                operations: action.operations
+				operations: action.operations,
+				document: action.document,
+				version: action.version,
             };
 
             localResource = reducer(resourceStore.localResource, outstandingChangeset);

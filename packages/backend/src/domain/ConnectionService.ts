@@ -7,4 +7,5 @@ export default interface ConnectionService<V, S, O> {
     send(connectionId: ConnectionId, message: Response<V, S, O>): Promise<void>;
 	close(connectionId: ConnectionId): Promise<void>
 	open(connectionId: ConnectionId, connection: SocketStream, request: FastifyRequest): Promise<void>
+	broadcastAppliedChangeset?(respone: Response<V, S, O>): Promise<void>
 }
