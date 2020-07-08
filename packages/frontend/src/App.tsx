@@ -16,7 +16,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<SlateResourceServiceContext.Provider value={graphqlSlateResourceService(client, 3000)}>
+			<SlateResourceServiceContext.Provider value={graphqlSlateResourceService(client, 1250)}>
 				<CollaborativeRichTextEditor 
 					resourceId={resourceId} 
 					resourceVersion={resourceVersion} 

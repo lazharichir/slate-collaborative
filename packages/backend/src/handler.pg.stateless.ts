@@ -97,13 +97,10 @@ export async function StatelessHandler(
 		console.log(`⬇️ StatelessHandler [${connectionId}] says `, JSON.stringify(request, null, 2))
 
 	switch (request.type) {
-
 		case `apply_changeset`:
 			return appplyChangesetRequestHandler.handle(connectionId, request)
-	
 		default:
 			throw new Error(`Unknown request type: ${request.type}.`)
-			break;
 	}
 
 }

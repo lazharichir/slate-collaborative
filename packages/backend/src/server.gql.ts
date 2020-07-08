@@ -28,7 +28,7 @@ export const createServer = async (port: number = 5000) => {
 							metadata: JSON.stringify(x.metadata),
 						}
 
-						console.log(`> publishing response`, response)
+						console.log(`> subscribeToDocument payload...`, response)
 
 						return response
 					},

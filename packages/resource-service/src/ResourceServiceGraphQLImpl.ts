@@ -2,10 +2,12 @@ import { resourceStoreReducer } from "./store/resourceStoreReducer"
 import {
 	Changeset,
 	changesetsOptimizer,
+	ChangesetId,
 	ClientId,
 	Resource,
 	ResourceId,
 	ResourceVersion,
+	ResourceRevision,
 } from "@wleroux/resource"
 import { randomUUID } from "./util/randomUUID"
 import { ResourceStoreAction } from "./store/ResourceStoreAction"
@@ -229,6 +231,8 @@ export class ResourceServiceGraphQLImpl<VV, V, VS, S, VO, O, TCacheShape>
 			? `latest`
 			: remoteResource.revision + 1
 
+		await this.loadResource(document, version, since)
+
 		this.apolloClient
 			.subscribe<RESOURCE_LOADED<V, S>, SubscribeToDocumentMutationArgs>({
 				query: SubscribeToDocumentMutation,
@@ -238,15 +242,52 @@ export class ResourceServiceGraphQLImpl<VV, V, VS, S, VO, O, TCacheShape>
 					since,
 				},
 			})
-			.subscribe(
-				(x: any, y: any) => {
-					console.log(x, y)
-				},
-				(err: Error) => console.log(`Finished with error:`, err),
-				() => console.log("Finished")
-			)
+			.subscribe({
+				next(chunk: any) {
+					// ... call updateQuery to integrate the new comment
+					// into the existing list of comments
+					console.log(`RECV: `, chunk)
 
-		await this.loadResource(document, version, since)
+					if (!chunk.data || !chunk.data.subscribeToDocument) {
+						console.log(`Empty data field (data, data.subscribeToDocument) received from subscription.`)
+						return;
+					}
+
+					const message = chunk.data.subscribeToDocument
+
+					const parsedChangeset: Changeset<O> = {
+						id: message.id as ChangesetId,
+						document: message.document as ResourceId,
+						version: message.version as ResourceVersion,
+						revision: message.revision as ResourceRevision,
+						client: message.client as ClientId,
+						operations: JSON.parse(message.operations) as O[],
+						metadata: JSON.parse(message.metadata),
+					}
+
+					const identifier = `${document}/${version}`
+
+					this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
+						type: "apply_remote_changeset",
+						changeset: parsedChangeset,
+						document: parsedChangeset.document,
+						version: parsedChangeset.version,
+					});
+
+					if (this.resourceStores[identifier].inProgressChangeset === null) {
+						this.sendOutstandingChangesets(document, version);
+					}
+
+					this.broadcast(document, version);
+					this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]).then();
+					this.setSendOutstandingChangesetssInterval(document, version)
+					
+				},
+				error(err: Error) { console.error('err', err); },
+				// (err: Error) => console.log(`Finished with error:`, err),
+				// () => console.log("Finished")
+			})
+
 		this.resendInProgressChangeset(document, version)
 		this.sendOutstandingChangesets(document, version)
 

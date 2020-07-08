@@ -44,7 +44,7 @@ export default class VoidGatewayConnectionService<V, S, O>
 				metadata: message.changeset.metadata,
 			}
 			console.log(`> broadcastAppliedChangeset`, payload)
-			pubsub.publish(`AppliedChangeset`, payload)
+			pubsub.publish(`ChangesetApplied`, payload)
 		}
 	}
 
