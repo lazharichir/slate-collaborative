@@ -3,6 +3,7 @@ import cors from "fastify-cors"
 import GQL from "fastify-gql"
 import { Schema } from "./schema"
 import { pubsub } from "./schema/pubsub"
+import { withFilter } from 'graphql-subscriptions';
 
 export const createServer = async (port: number = 5000) => {
 
@@ -32,7 +33,18 @@ export const createServer = async (port: number = 5000) => {
 
 						return response
 					},
-					subscribe: () => pubsub.asyncIterator(`ChangesetApplied`),
+
+					subscribe: withFilter(() => pubsub.asyncIterator(`ChangesetApplied`), (payload, variables) => {
+						console.log(`payload`, payload)
+						console.log(`variables`, variables)
+						return String(payload.document) === String(variables.document) && String(payload.version) === String(variables.version);
+					}),
+
+					// subscribe: (_, __, subscriptionContext, ctx) => {
+					// 	console.log(`subscriptionContext => `, subscriptionContext)
+					// 	console.log(`ctx => `, ctx)
+					// 	return pubsub.asyncIterator(`ChangesetApplied`)
+					// },
 				}
 			}
 		}
