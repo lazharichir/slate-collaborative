@@ -6,14 +6,13 @@ import { pubsub } from "../schema/pubsub"
 export const subscribeToDocument: graphql.GraphQLFieldConfig<
 	any,
 	any,
-	any // { document: ResourceId; version: ResourceVersion; revision: ResourceRevision; since?: number }
+	{ document: ResourceId; version: ResourceVersion; }
 > = {
 	type: ChangeSetType,
-	// args: {
-	// 	document: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
-	// 	version: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
-	// 	since: { type: graphql.GraphQLInt },
-	// },
+	args: {
+		document: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
+		version: { type: graphql.GraphQLNonNull(graphql.GraphQLString) },
+	},
 	// subscribe: (_, { document, version, since }) => {
 	// 	console.log(`subscribeToDocument`, { document, version, since })
 	// 	return pubsub.asyncIterator(`ChangesetApplied`)

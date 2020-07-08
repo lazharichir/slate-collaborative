@@ -22,14 +22,13 @@ export const GetDocumentValueQuery = gql`
 export type SubscribeToDocumentMutationArgs = {
 	document: string
 	version: string
-	since: number|`latest`
 }
 
+// # subscription {
+// # 	subscribeToDocument {
 export const SubscribeToDocumentMutation = gql`
-	# subscription SubscribeToDocument($document: String!, $version: String!, $since: Integer!) {
-	# subscribeToDocument(document: $document, version: $version, since: $since) {
-	subscription {
-		subscribeToDocument {
+	subscription SubscribeToDocument($document: String!, $version: String!) {
+		subscribeToDocument(document: $document, version: $version) {
 			id
 			document
 			version
