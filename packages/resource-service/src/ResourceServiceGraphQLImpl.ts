@@ -233,13 +233,14 @@ export class ResourceServiceGraphQLImpl<VV, V, VS, S, VO, O, TCacheShape>
 
 		await this.loadResource(document, version, since)
 
+		const that = this
+
 		this.apolloClient
 			.subscribe<RESOURCE_LOADED<V, S>, SubscribeToDocumentMutationArgs>({
 				query: SubscribeToDocumentMutation,
 				variables: {
 					document,
 					version,
-					since,
 				},
 			})
 			.subscribe({
@@ -267,20 +268,20 @@ export class ResourceServiceGraphQLImpl<VV, V, VS, S, VO, O, TCacheShape>
 
 					const identifier = `${document}/${version}`
 
-					this.resourceStores[identifier] = this.reducer(this.resourceStores[identifier], {
+					that.resourceStores[identifier] = that.reducer(that.resourceStores[identifier], {
 						type: "apply_remote_changeset",
 						changeset: parsedChangeset,
 						document: parsedChangeset.document,
 						version: parsedChangeset.version,
 					});
 
-					if (this.resourceStores[identifier].inProgressChangeset === null) {
-						this.sendOutstandingChangesets(document, version);
+					if (that.resourceStores[identifier].inProgressChangeset === null) {
+						that.sendOutstandingChangesets(document, version);
 					}
 
-					this.broadcast(document, version);
-					this.resourceStoreStorage.save(document, version, this.resourceStores[identifier]).then();
-					this.setSendOutstandingChangesetssInterval(document, version)
+					that.broadcast(document, version);
+					that.resourceStoreStorage.save(document, version, that.resourceStores[identifier]).then();
+					that.setSendOutstandingChangesetsInterval(document, version)
 					
 				},
 				error(err: Error) { console.error('err', err); },
